@@ -15,10 +15,10 @@
 
 #include <DeframerCfg.hpp>
 
-#include "Svc/Deframer/DeframerComponentAc.hpp"
 #include "Svc/FramingProtocol/DeframingProtocol.hpp"
 #include "Svc/FramingProtocol/DeframingProtocolInterface.hpp"
 #include "Utils/Types/CircularBuffer.hpp"
+#include "Svc/Deframer/DeframerComponentAc.hpp"
 
 namespace Svc {
 

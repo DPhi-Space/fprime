@@ -23,6 +23,7 @@ class ComStub : public ComStubComponentBase {
     ComStub(const char* const compName /*!< The component name*/
     );
 
+    
     //! Initialize object ComStub
     //!
     void init(const NATIVE_INT_TYPE instance = 0 /*!< The instance number*/

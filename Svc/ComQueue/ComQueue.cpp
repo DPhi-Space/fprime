@@ -179,6 +179,13 @@ void ComQueue::run_handler(const NATIVE_INT_TYPE portNum, U32 context) {
         this->m_queues[i + COM_PORT_COUNT].clear_high_water_mark();
     }
     this->tlmWrite_buffQueueDepth(buffQueueDepth);
+
+    bool unacked_full = false;
+    this->unackedListFull_out(0, unacked_full);
+    // When the component is already in READY state process the queue to send out the next available message immediately
+    if (this->m_state == READY && unacked_full == false) {
+        this->processQueue();
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -200,8 +207,11 @@ void ComQueue::enqueue(const FwIndexType queueNum, QueueType queueType, const U8
         this->log_WARNING_HI_QueueOverflow(queueType, static_cast<U32>(portNum));
         this->m_throttle[queueNum] = true;
     }
+
+    bool unacked_full = false;
+    this->unackedListFull_out(0, unacked_full);
     // When the component is already in READY state process the queue to send out the next available message immediately
-    if (this->m_state == READY) {
+    if (this->m_state == READY && unacked_full == false) {
         this->processQueue();
     }
 }

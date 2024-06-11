@@ -33,6 +33,8 @@ constant FileDownCompletePorts = 1
 @ Used for number of Fw::Com type ports supported by Svc::ComQueue
 constant ComQueueComPorts = 1
 
+constant ComQueueAckPorts = 1
+
 @ Used for number of Fw::Buffer type ports supported by Svc::ComQueue
 constant ComQueueBufferPorts = 1
 

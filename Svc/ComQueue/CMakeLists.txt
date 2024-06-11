@@ -12,7 +12,7 @@ set(MOD_DEPS
         Fw/Types
         )
 set(SOURCE_FILES
-        "${CMAKE_CURRENT_LIST_DIR}/ComQueue.fpp"
+        "${CMAKE_CURRENT_LIST_DIR}/ComQueue.fpp"        
         "${CMAKE_CURRENT_LIST_DIR}/ComQueue.cpp"
         )
 register_fprime_module()

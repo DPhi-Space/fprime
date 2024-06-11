@@ -85,8 +85,8 @@ class ComQueue : public ComQueueComponentBase {
      * State of the component.
      */
     enum SendState {
-        READY,   //!< Component is ready to send next priority message
-        WAITING  //!< Component is waiting for status of the last sent message
+        READY,        //!< Component is ready to send next priority message
+        WAITING      //!< Component is waiting for status of the last sent message
     };
 
   public:
@@ -110,6 +110,7 @@ class ComQueue : public ComQueueComponentBase {
     ~ComQueue();
 
     //! Configure the queue depths, priorities, and memory allocation for the component
+    
     //!
     //! Takes in the queue depth and priority per-port in order from Fw::Com through Fw::Buffer ports. Calculates the
     //! queue metadata stored `m_prioritizedList` and then sorts that list by priority.

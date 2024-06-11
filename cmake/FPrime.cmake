@@ -12,6 +12,7 @@ include(options)
 include(sanitizers) # Enable sanitizers if they are requested
 include(required)
 
+
 # Add project root's cmake folder to module path
 if (IS_DIRECTORY "${FPRIME_PROJECT_ROOT}/cmake")
     list(APPEND CMAKE_MODULE_PATH "${FPRIME_PROJECT_ROOT}/cmake")

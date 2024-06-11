@@ -35,7 +35,8 @@ class FramingProtocolInterface {
 
     //! \brief send framed data out of the framer
     //! \param outgoing: framed data wrapped in an Fw::Buffer
-    virtual void send(Fw::Buffer& outgoing) = 0;
+    //virtual void send(Fw::Buffer& outgoing) = 0;
+    virtual void send(Fw::Buffer& outgoing, bool ack=false) = 0;
 
 };
 

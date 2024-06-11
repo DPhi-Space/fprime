@@ -1,3 +1,5 @@
+#include "../../../Ports/Ports.fpp"
+
 module Svc {
     @ An enumeration of queue data types
     enum QueueType { COM_QUEUE, BUFFER_QUEUE }
@@ -33,6 +35,10 @@ module Svc {
 
       @ Port for scheduling telemetry output
       async input port run: Svc.Sched drop
+
+
+      @ Port for fetching the state of AckTracker
+      output port unackedListFull : Components.UnackedFull
 
       # ----------------------------------------------------------------------
       # Special ports

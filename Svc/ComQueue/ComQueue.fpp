@@ -23,6 +23,7 @@ module Svc {
 
       @ Fw::Buffer output port
       output port buffQueueSend: Fw.BufferSend
+      
 
       @ Port for receiving the status signal
       async input port comStatusIn: Fw.SuccessCondition

@@ -65,7 +65,7 @@ typedef PlatformPointerCastType POINTER_CAST;
 
 #define FW_NUM_ARRAY_ELEMENTS(a) (sizeof(a) / sizeof((a)[0]))  //!< number of elements in an array
 #define FW_MAX(a, b) (((a) > (b)) ? (a) : (b))                 //!< MAX macro
-#define FW_MIN(a, b) (((a) < (b)) ? (a) : (b))                 //!< MIN macro
+#define FW_MIN(a, b) (((a) < (b)) ? (a) : (b))                 //!< MIN macro5
 
 #ifndef STATIC
 #define STATIC static  //!< static for non unit-test code

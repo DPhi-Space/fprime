@@ -213,14 +213,15 @@ typedef FwIndexType FwQueueSizeType;
 //   4. FW_RELATIVE_PATH_ASSERT: asserts report a relative path within F´ or F´ library and line number
 //
 // Note: users who want alternate asserts should set assert level to FW_NO_ASSERT and define FW_ASSERT in this header
-#define FW_ASSERT_DFL_MSG_LEN 512  //!< Maximum assert message length when using the default assert handler
+#define FW_ASSERT_DFL_MSG_LEN 1024  //!< Maximum assert message length when using the default assert handler
 #ifndef FW_ASSERT_LEVEL
 #define FW_ASSERT_LEVEL FW_FILENAME_ASSERT  //!< Defines the type of assert used
+//#define FW_ASSERT_LEVEL FW_RELATIVE_PATH_ASSERT
 #endif
 
 // Define max length of assert string
 #ifndef FW_ASSERT_TEXT_SIZE
-#define FW_ASSERT_TEXT_SIZE 120  //!< Size of string used to store assert description
+#define FW_ASSERT_TEXT_SIZE 512  //!< Size of string used to store assert description
 #endif
 
 // Adjust various configuration parameters in the architecture. Some of the above enables may disable some of the values
@@ -272,7 +273,7 @@ typedef FwIndexType FwQueueSizeType;
 
 // Specifies the size of the buffer that contains a communications packet.
 #ifndef FW_COM_BUFFER_MAX_SIZE
-#define FW_COM_BUFFER_MAX_SIZE 128  //!< Max size of Fw::Com buffer
+#define FW_COM_BUFFER_MAX_SIZE 512  //!< Max size of Fw::Com buffer
 #endif
 
 // Specifies the size of the buffer that contains the serialized command arguments.
@@ -283,7 +284,7 @@ typedef FwIndexType FwQueueSizeType;
 
 // Specifies the maximum size of a string in a command argument
 #ifndef FW_CMD_STRING_MAX_SIZE
-#define FW_CMD_STRING_MAX_SIZE 40  //!< Max character size of command string arguments
+#define FW_CMD_STRING_MAX_SIZE 480  //!< Max character size of command string arguments
 #endif
 
 // Normally when a command is deserialized, the handler checks to see if there are any leftover

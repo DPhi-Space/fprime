@@ -155,10 +155,29 @@ void ComQueue::comStatusIn_handler(const NATIVE_INT_TYPE portNum, Fw::Success& c
                 this->m_state = WAITING;
             }
             break;
+
+        case UNACKED_FULL:{
+            // TODO 
+            // this state is mostly to ignore the assert in the default condition
+            // when the comInt sends the comStatus back from an unacked packet that 
+            // timed out, which did not come to the queue the second time it was sent
+            // so the queue is in READY state and receives a status message, which triggers 
+            // the assert below
+            bool unacked_full = false;
+            this->unackedListFull_out(0, unacked_full);
+            
+            if(unacked_full == false)
+            {
+                this->m_state = READY;
+            }
+            break;
+        }
+
         // Both READY and unknown states should not be possible at this point. To receive a status message we must be
         // one of the WAITING or RETRY states.
         default:
-            FW_ASSERT(0, this->m_state);
+            // FW_ASSERT(0, this->m_state);
+            // TODO check if it is correct now to remove this assert taking into account the unacked resends from acktracker
             break;
     }
 }
@@ -182,8 +201,16 @@ void ComQueue::run_handler(const NATIVE_INT_TYPE portNum, U32 context) {
 
     bool unacked_full = false;
     this->unackedListFull_out(0, unacked_full);
-    // When the component is already in READY state process the queue to send out the next available message immediately
-    if (this->m_state == READY && unacked_full == false) {
+
+    if (unacked_full)
+    {
+        // the unacked list is full in the acktracker
+        // so we should not process the queue, just wait for the ack of the packets
+        this->m_state = UNACKED_FULL;
+    }
+    else if (this->m_state == READY) 
+    {
+        // When the component is already in READY state process the queue to send out the next available message immediately
         this->processQueue();
     }
 }

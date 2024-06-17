@@ -86,7 +86,8 @@ class ComQueue : public ComQueueComponentBase {
      */
     enum SendState {
         READY,        //!< Component is ready to send next priority message
-        WAITING      //!< Component is waiting for status of the last sent message
+        WAITING,      //!< Component is waiting for status of the last sent message
+        UNACKED_FULL
     };
 
   public:

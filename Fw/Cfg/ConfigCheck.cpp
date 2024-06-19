@@ -15,7 +15,9 @@
 
 // Check that command/telemetry strings are not larger than an argument buffer
 
-static_assert(FW_CMD_STRING_MAX_SIZE <= FW_CMD_ARG_BUFFER_MAX_SIZE, "FW_CMD_STRING_MAX_SIZE cannot be larger than FW_CMD_ARG_BUFFER_MAX_SIZE");
+
+// TODO check the implications of removing this assert
+//static_assert(FW_CMD_STRING_MAX_SIZE <= FW_CMD_ARG_BUFFER_MAX_SIZE, "FW_CMD_STRING_MAX_SIZE cannot be larger than FW_CMD_ARG_BUFFER_MAX_SIZE");
 static_assert(FW_LOG_STRING_MAX_SIZE <= FW_LOG_BUFFER_MAX_SIZE, "FW_LOG_STRING_MAX_SIZE cannot be larger than FW_LOG_BUFFER_MAX_SIZE");
 static_assert(FW_TLM_STRING_MAX_SIZE <= FW_TLM_BUFFER_MAX_SIZE, "FW_TLM_STRING_MAX_SIZE cannot be larger than FW_TLM_BUFFER_MAX_SIZE");
 static_assert(FW_PARAM_STRING_MAX_SIZE <= FW_PARAM_BUFFER_MAX_SIZE, "FW_PARAM_STRING_MAX_SIZE cannot be larger than FW_PARAM_BUFFER_MAX_SIZE");

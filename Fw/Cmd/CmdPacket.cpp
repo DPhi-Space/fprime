@@ -21,8 +21,23 @@ namespace Fw {
     SerializeStatus CmdPacket::serialize(SerializeBufferBase& buffer) const {
 
         // Shouldn't be called
-        FW_ASSERT(0);
-        return FW_SERIALIZE_OK; // for compiler
+     /*    FW_ASSERT(0);
+        return FW_SERIALIZE_OK; // for compiler */
+
+        // serialize the packet type
+        SerializeStatus stat = buffer.serialize(this->m_type);
+        if (stat != Fw::FW_SERIALIZE_OK) {
+            return stat;
+        }
+        
+        // serialize the number of packets
+        stat = buffer.serialize(this->m_opcode);
+
+        if (stat != Fw::FW_SERIALIZE_OK) {
+            return stat;
+        }
+        // Serialize the ComBuffer
+        return buffer.serialize(this->m_argBuffer.getBuffAddr(),m_argBuffer.getBuffLength(),true);
 
     }
 
@@ -60,6 +75,13 @@ namespace Fw {
         return this->m_argBuffer;
     }
 
+    void CmdPacket::setOpcode(FwOpcodeType opcode){
+        this->m_opcode = opcode;
+    }
+    
+    void CmdPacket::setArgBuffer(CmdArgBuffer argbuf){
+        this->m_argBuffer = argbuf;
+    }
 
 
 } /* namespace Fw */

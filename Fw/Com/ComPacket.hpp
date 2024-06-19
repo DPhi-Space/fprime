@@ -30,7 +30,7 @@ namespace Fw {
                 FW_PACKET_ACK     = 0xAC,
                 FW_PACKET_UNKNOWN = 0xFF // !< Unknown packet
             } ComPacketType;
-
+            
             ComPacket();
             virtual ~ComPacket();
 

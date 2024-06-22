@@ -36,3 +36,7 @@ async command CS_MANUAL \
 @ Wait for sequences that are running to finish. Allow user to run multiple seq files in SEQ_NO_BLOCK mode then wait for them to finish before allowing more seq run request.
 async command CS_JOIN_WAIT \
   opcode 7
+
+@ Run a command sequence file with default values cmds.bin and BLOCK
+async command CS_RUN_CMDS() \
+  opcode 8

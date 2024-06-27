@@ -145,7 +145,7 @@ namespace Svc {
         }
         Fw::CmdStringArg fileName("cmds.bin");
         
-        this->m_blockState = CmdSequencer_BlockState::T::BLOCK;
+        this->m_blockState = CmdSequencer_BlockState::T::NO_BLOCK;
         this->m_cmdSeq = cmdSeq;
         this->m_opCode = opCode;
 

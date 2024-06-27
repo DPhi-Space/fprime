@@ -27,8 +27,11 @@ namespace Fw {
                 FW_PACKET_DP, //!< Data product packet
                 FW_PACKET_IDLE, // !< Idle packet
                 FW_PACKET_RAW,
-                FW_PACKET_ACK     = 0xAC,
+                FW_PACKET_ACK           = 0xAC,
+                FW_PACKET_RET_OK        = 0xAD,
+                FW_PACKET_RET_ERR       = 0xAE,
                 FW_PACKET_UNKNOWN = 0xFF // !< Unknown packet
+                
             } ComPacketType;
             
             ComPacket();

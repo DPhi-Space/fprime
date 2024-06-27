@@ -54,9 +54,14 @@ namespace Fw {
         }
 
         stat = buffer.deserialize(this->m_opcode);
+        
         if (stat != FW_SERIALIZE_OK) {
             return stat;
         }
+
+        // separate the cmdSeq from the opcode (each 2B)
+        this->cmdSeq = (this->m_opcode & 0xFFFF0000) >> 16;
+        this->m_opcode = (this->m_opcode & 0x0000FFFF);
 
         // if non-empty, copy data
         if (buffer.getBuffLeft()) {

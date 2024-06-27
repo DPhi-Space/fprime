@@ -29,6 +29,9 @@ module Svc {
     @ Ping output port
     output port pingOut: Svc.Ping
 
+    @ RetPacket Output port to forward status of command back
+    output port retPktOut: Fw.Com
+
     # ----------------------------------------------------------------------
     # Port matching specifiers
     # ----------------------------------------------------------------------

@@ -11,6 +11,9 @@
 #include <Fw/Com/ComPacket.hpp>
 #include <Fw/Cmd/CmdArgBuffer.hpp>
 
+
+
+
 namespace Fw {
 
     class CmdPacket : public ComPacket {
@@ -18,6 +21,16 @@ namespace Fw {
 
             CmdPacket();
             virtual ~CmdPacket();
+
+
+            // when a component within fprime sends a cmdpacket to 
+            // the cmd dispatcher, we will let it manage the cmd seq id
+            // as we are not aware of the current cmd seq id counter
+            typedef enum {
+                INTERNAL_CMD_CONTEXT = 0xFFFF,
+                EXTERNAL_CMD_CONTEXT = 0xFAFA,
+            } CmdContext;
+
 
             SerializeStatus serialize(SerializeBufferBase& buffer) const; //!< serialize contents
             SerializeStatus deserialize(SerializeBufferBase& buffer);
@@ -29,6 +42,7 @@ namespace Fw {
         protected:
             FwOpcodeType m_opcode;
             CmdArgBuffer m_argBuffer;
+            U32 cmdSeq;
     };
 
 } /* namespace Fw */

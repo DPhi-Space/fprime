@@ -29,9 +29,11 @@ module Svc {
     @ Ping output port
     output port pingOut: Svc.Ping
 
-    @ RetPacket Output port to forward status of command back
-    output port retPktOut: Fw.Com
-
+    @ Com Output port to forward status of command back and also commands
+    output port comOut: Fw.Com
+    
+    @ Com Input port to process the return packets from the deframer
+    async input port retPktIn: Fw.Com
     # ----------------------------------------------------------------------
     # Port matching specifiers
     # ----------------------------------------------------------------------

@@ -37,7 +37,6 @@ module Svc {
       @ Port for scheduling telemetry output
       async input port run: Svc.Sched drop
 
-
       @ Port for fetching the state of AckTracker
       output port unackedListFull : Components.UnackedFull
 

@@ -28,6 +28,8 @@ module Svc {
     @ Ping output port
     output port pingOut: Svc.Ping
 
+    output port unackedListEmpty: Components.UnackedEmpty
+
     # ----------------------------------------------------------------------
     # Special ports
     # ----------------------------------------------------------------------

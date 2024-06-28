@@ -60,7 +60,7 @@ namespace Fw {
         }
 
         // separate the cmdSeq from the opcode (each 2B)
-        this->cmdSeq = (this->m_opcode & 0xFFFF0000) >> 16;
+        this->cmdSeq = static_cast<U16>((this->m_opcode & 0xFFFF0000) >> 16);
         this->m_opcode = (this->m_opcode & 0x0000FFFF);
 
         // if non-empty, copy data
@@ -80,9 +80,14 @@ namespace Fw {
         return this->m_argBuffer;
     }
 
+    void CmdPacket::setSeqId(U16 cmdSeqId){
+        this->cmdSeq = cmdSeqId;
+    }
+
     void CmdPacket::setOpcode(FwOpcodeType opcode){
         this->m_opcode = opcode;
     }
+
     
     void CmdPacket::setArgBuffer(CmdArgBuffer argbuf){
         this->m_argBuffer = argbuf;

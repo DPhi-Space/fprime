@@ -141,6 +141,36 @@ namespace Svc {
         }
         break;
       }
+
+      // if we reach this point, it is because the FileDownlink is ready
+      // but the AckTracker still has unacked data packets.
+      case Mode::ENDPKT_BLOCKED: {
+        bool unacked_empty = false;
+        this->unackedListEmpty_out(0, unacked_empty);
+        // if the acktracker has no unacked data packets, we can send the EndPacket
+        if (unacked_empty) 
+        {
+          this->sendEndPacket();
+          this->m_lastCompletedType = Fw::FilePacket::T_END;
+          this->m_mode.set(Mode::WAIT);
+          this->m_curTimer = 0;
+        }
+        // we perform the same as the WAIT state if not
+        else if (this->m_curTimer >= this->m_timeout) 
+        {
+          this->m_curTimer = 0;
+          this->log_WARNING_HI_DownlinkTimeout(this->m_file.getSourceName(), this->m_file.getDestName());
+          this->enterCooldown();
+          this->sendResponse(FILEDOWNLINK_COMMAND_FAILURES_DISABLED ? SendFileStatus::STATUS_OK : SendFileStatus::STATUS_ERROR);
+        } 
+        //Otherwise update the current counter
+        else 
+        { 
+          this->m_curTimer += m_cycleTime;
+        }
+
+
+      }
       default:
         break;
     }
@@ -187,8 +217,7 @@ namespace Svc {
       this->pingOut_out(0,key);
   }
 
-  void FileDownlink ::
-    bufferReturn_handler(
+  void FileDownlink ::bufferReturn_handler(
         const NATIVE_INT_TYPE portNum,
         Fw::Buffer &fwBuffer
     )
@@ -200,7 +229,7 @@ namespace Svc {
 		  return;
 	  }
 	  //Non-ignored buffers cannot be returned in "DOWNLINK" and "IDLE" state.  Only in "WAIT", "CANCEL" state.
-	  FW_ASSERT(this->m_mode.get() == Mode::WAIT || this->m_mode.get() == Mode::CANCEL, this->m_mode.get());
+	  FW_ASSERT(this->m_mode.get() == Mode::WAIT || this->m_mode.get() == Mode::CANCEL || this->m_mode.get() == Mode::ENDPKT_BLOCKED, this->m_mode.get());
       //If the last packet has been sent (and is returning now) then finish the file
 	  if (this->m_lastCompletedType == Fw::FilePacket::T_END ||
           this->m_lastCompletedType == Fw::FilePacket::T_CANCEL) {
@@ -505,14 +534,18 @@ namespace Svc {
   {
       FW_ASSERT(this->m_lastCompletedType != Fw::FilePacket::T_NONE, this->m_lastCompletedType);
       FW_ASSERT(this->m_mode.get() == Mode::CANCEL || this->m_mode.get() == Mode::DOWNLINK, this->m_mode.get());
-      //If canceled mode and currently downlinking data then send a cancel packet
+
+      // Get current state of the AckTracker unacked list
+      bool unacked_empty = false;
+      this->unackedListEmpty_out(0, unacked_empty);
+      // If canceled mode and currently downlinking data then send a cancel packet
       if (this->m_mode.get() == Mode::CANCEL && this->m_lastCompletedType == Fw::FilePacket::T_START) {
           this->sendCancelPacket();
           this->m_lastCompletedType = Fw::FilePacket::T_CANCEL;
       }
-      //If in downlink mode and currently downlinking data then continue with the next packer
+      // If in downlink mode and currently downlinking data then continue with the next packer
       else if (this->m_mode.get() == Mode::DOWNLINK && this->m_lastCompletedType == Fw::FilePacket::T_START) {
-          //Send the next packet, or fail doing so
+          // Send the next packet, or fail doing so
           const Os::File::Status status = this->sendDataPacket(this->m_byteOffset);
           if (status != Os::File::OP_OK) {
               this->log_WARNING_HI_SendDataFail(this->m_file.getSourceName(), this->m_byteOffset);
@@ -522,10 +555,21 @@ namespace Svc {
               return;
           }
       }
-      //If in downlink mode or cancel and finished downlinking data then send the last packet
+      // If in downlink mode or cancel and finished downlinking data then send the last packet
+      // here we will also verify that the AckTracker unacked list of file types is empty, 
+      // which would mean that all the data packets we have previously sent have been acked.
       else if (this->m_lastCompletedType == Fw::FilePacket::T_DATA) {
-          this->sendEndPacket();
-          this->m_lastCompletedType = Fw::FilePacket::T_END;
+          if (unacked_empty){
+            this->sendEndPacket();
+            this->m_lastCompletedType = Fw::FilePacket::T_END;
+            this->m_mode.set(Mode::WAIT);
+          }else{
+            this->m_mode.set(Mode::ENDPKT_BLOCKED);
+            this->m_curTimer = 0;
+            return;
+          }   
+          /* this->sendEndPacket();
+          this->m_lastCompletedType = Fw::FilePacket::T_END; */
       }
       this->m_mode.set(Mode::WAIT);
       this->m_curTimer = 0;

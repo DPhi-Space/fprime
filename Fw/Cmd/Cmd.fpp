@@ -24,6 +24,8 @@ module Fw {
     BUSY = 5 @< Component busy
   }
 
+
+
   @ Port for sending command responses
   port CmdResponse(
                     opCode: FwOpcodeType @< Command Op Code

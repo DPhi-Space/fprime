@@ -38,7 +38,7 @@ namespace Svc {
         public:
 
           //! The Mode type
-          typedef enum { IDLE, DOWNLINK, CANCEL, WAIT, COOLDOWN } Type;
+          typedef enum { IDLE, DOWNLINK, CANCEL, WAIT, COOLDOWN, ENDPKT_BLOCKED } Type;
 
         public:
 

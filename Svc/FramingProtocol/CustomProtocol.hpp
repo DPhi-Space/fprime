@@ -4,6 +4,7 @@
 #include <Svc/FramingProtocol/FramingProtocol.hpp>
 #include <Svc/FramingProtocol/DeframingProtocol.hpp>
 //#include <Svc/FramingProtocol/FramingProtocolInterface.hpp>
+#include <Fw/Ports/Node/NodeEnumAc.hpp>
 
 namespace Svc {
   // Definitions for the F Prime frame header
@@ -21,14 +22,14 @@ namespace Svc {
     //! The start word for F Prime framing
     const TokenType START_WORD = static_cast<TokenType>(0xdeadbeef);
     //! The destination and source of each packetf
-    enum Node{
+ /*    enum Node{
       MPU = 0xaa,
       MCU = 0xbb,
       FPGA = 0xcc,
       GPU = 0xdd,
       OTV = 0xee,
       GDS = 0xff
-    };
+    }; */
 
   }
 
@@ -56,9 +57,10 @@ namespace Svc {
           Fw::ComPacket::ComPacketType packet_type //!< The packet type
       ) override;
 
-      CgFrameHeader::Node dest_node;
+      //CgFrameHeader::Node dest_node;
+      Components::Node dest_node;
 
-      void set_node(CgFrameHeader::Node node);
+      void set_node(Components::Node node);
       void frame_ack(const U8 packetID);
 
     private:

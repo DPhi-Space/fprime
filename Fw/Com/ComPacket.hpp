@@ -9,6 +9,7 @@
 #define COMPACKET_HPP_
 
 #include <Fw/Types/Serializable.hpp>
+#include <Fw/Ports/Node/NodeEnumAc.hpp>
 
 // Packet format:
 // |32-bit packet type|packet type-specific data|
@@ -33,6 +34,8 @@ namespace Fw {
                 FW_PACKET_UNKNOWN = 0xFF // !< Unknown packet
                 
             } ComPacketType;
+
+            Components::Node dest = Components::Node::MCU;
             
             ComPacket();
             virtual ~ComPacket();

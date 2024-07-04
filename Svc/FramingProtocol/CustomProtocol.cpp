@@ -5,6 +5,7 @@
 //#include "../Components/AckTracker/AckPacket.hpp"
 #include <iostream>
 
+
 namespace Svc {
 #define USE_PACKETID 
 
@@ -33,7 +34,7 @@ namespace Svc {
         m_interface = &interface;
     }
 
-    void CgFraming::set_node(CgFrameHeader::Node node){
+    void CgFraming::set_node(Components::Node node){
         this->dest_node = node;
     }
 
@@ -51,7 +52,7 @@ namespace Svc {
                                                         (size + ((packet_type != Fw::ComPacket::FW_PACKET_UNKNOWN) ? sizeof(I32) : 0));
         CgFrameHeader::HalfTokenType total = static_cast<CgFrameHeader::HalfTokenType>
                                                         (real_data_size + this->header_size + HASH_DIGEST_LENGTH);
-        CgFrameHeader::HalfTokenType metadata = (CgFrameHeader::MPU<<8) | (CgFrameHeader::GDS);
+        CgFrameHeader::HalfTokenType metadata = (Components::Node::MPU<<8) | (Components::Node::MPU);
 
         Fw::Buffer buffer = m_interface->allocate(total);
         Fw::SerializeBufferBase& serializer = buffer.getSerializeRepr();
@@ -97,7 +98,7 @@ namespace Svc {
         FW_ASSERT(m_interface != nullptr);
         CgFrameHeader::HalfTokenType total = static_cast<CgFrameHeader::HalfTokenType>
                                                 ( this->header_size + sizeof(I32) + HASH_DIGEST_LENGTH);
-        CgFrameHeader::HalfTokenType metadata = (CgFrameHeader::MPU<<8) | (CgFrameHeader::GDS);
+        CgFrameHeader::HalfTokenType metadata = (Components::Node::MPU<<8) | (Components::Node::GDS);
         CgFrameHeader::HalfTokenType size = sizeof(I32);
         
         Fw::Buffer buffer = m_interface->allocate(total);
@@ -209,7 +210,7 @@ namespace Svc {
             // Size is too large to process: needed would overflow
             return Svc::DeframingProtocol::DEFRAMING_INVALID_SIZE;
         }
-        if (destination != CgFrameHeader::MPU) {
+        if (destination != Components::Node::MPU) {
             // Packet is not meant to the MPU, reject for now
             return Svc::DeframingProtocol::DEFRAMING_WRONG_DESTINATION;
         }

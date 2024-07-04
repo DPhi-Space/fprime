@@ -18,6 +18,7 @@ set(MOD_DEPS
     Fw/Time
     Utils/Hash
     Utils/Types
+    Fw/Ports/Node
 )
 
 register_fprime_module()

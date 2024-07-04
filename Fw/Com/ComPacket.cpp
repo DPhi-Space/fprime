@@ -15,13 +15,22 @@ namespace Fw {
     ComPacket::~ComPacket() {
     }
 
-    SerializeStatus ComPacket::serializeBase(SerializeBufferBase& buffer) const {
+    /* SerializeStatus ComPacket::serializeBase(SerializeBufferBase& buffer) const {
         return buffer.serialize(static_cast<FwPacketDescriptorType>(this->m_type));
+    } */
+    SerializeStatus ComPacket::serializeBase(SerializeBufferBase& buffer) const {
+        SerializeStatus status ;
+        status = buffer.serialize(static_cast<FwPacketDescriptorType>(this->dest));
+        status = buffer.serialize(static_cast<FwPacketDescriptorType>(this->m_type));
+        return status;
     }
 
     SerializeStatus ComPacket::deserializeBase(SerializeBufferBase& buffer) {
+        Components::Node destNode;
         FwPacketDescriptorType serVal;
-        SerializeStatus stat = buffer.deserialize(serVal);
+        SerializeStatus stat;
+        stat = buffer.deserialize(destNode);
+        stat = buffer.deserialize(serVal);
         if (FW_SERIALIZE_OK == stat) {
             this->m_type = static_cast<ComPacketType>(serVal);
         }

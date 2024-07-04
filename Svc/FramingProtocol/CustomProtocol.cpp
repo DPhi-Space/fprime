@@ -199,7 +199,6 @@ namespace Svc {
         status = ring.peek(deframed_packetID, sizeof(CgFrameHeader::TokenType) * 2);
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
         //std::cout << "[ProtocolDeframe] Received packetID "<< static_cast<unsigned int>(this->packet_id) <<std::endl;
-        std::cout << "[ProtocolDeframe] Received packetID "<< static_cast<unsigned int>(deframed_packetID) <<std::endl;
         //source    = static_cast<CgFrameHeader::HalfTokenType>((size_dest & 0xFF000000)>>24);
         destination = static_cast<CgFrameHeader::HalfTokenType>((size_dest & 0x00FF0000)>>16);
         size        = static_cast<CgFrameHeader::HalfTokenType>((size_dest & 0x0000FFFF));

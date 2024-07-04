@@ -273,7 +273,7 @@ typedef FwIndexType FwQueueSizeType;
 
 // Specifies the size of the buffer that contains a communications packet.
 #ifndef FW_COM_BUFFER_MAX_SIZE
-#define FW_COM_BUFFER_MAX_SIZE 255  //!< Max size of Fw::Com buffer
+#define FW_COM_BUFFER_MAX_SIZE 220  //!< Max size of Fw::Com buffer
 #endif
 
 // Specifies the size of the buffer that contains the serialized command arguments.
@@ -329,7 +329,7 @@ typedef FwIndexType FwQueueSizeType;
 
 // Specifies the maximum size of a file upload chunk
 #ifndef FW_FILE_BUFFER_MAX_SIZE
-#define FW_FILE_BUFFER_MAX_SIZE 255  //!< Max size of file buffer (i.e. chunk of file)
+#define FW_FILE_BUFFER_MAX_SIZE 200  //!< Max size of file buffer (i.e. chunk of file)
 #endif
 
 // Specifies the maximum size of a string in an interface call

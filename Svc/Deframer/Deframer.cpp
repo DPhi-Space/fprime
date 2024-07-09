@@ -109,7 +109,7 @@ Fw::Buffer Deframer ::allocate(const U32 size)  {
     return bufferAllocate_out(0, size);
 }
 
-void Deframer ::route(Fw::Buffer& packetBuffer) {
+void Deframer ::route(Fw::Buffer& packetBuffer, Components::Node source) {
 
     // Read the packet type from the packet buffer
     FwPacketDescriptorType packetType = Fw::ComPacket::FW_PACKET_UNKNOWN;
@@ -137,6 +137,8 @@ void Deframer ::route(Fw::Buffer& packetBuffer) {
                 status = com.setBuff(packetData, packetSize);
                 if (status == Fw::FW_SERIALIZE_OK) {
                     // Send the com buffer
+                    // TODO here we should add the source node as a context, to forward it to the
+                    // cmdDispatcher, so that it knows to whom send the RetPacket.
                     comOut_out(0, com, 0);
                 }
                 else {

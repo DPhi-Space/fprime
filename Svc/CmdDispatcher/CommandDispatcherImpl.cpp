@@ -71,6 +71,8 @@ namespace Svc {
         // look for command source
         NATIVE_INT_TYPE portToCall = -1;
         U32 context;
+        Components::Node destination;
+
         for (U32 pending = 0; pending < FW_NUM_ARRAY_ELEMENTS(this->m_sequenceTracker); pending++) {
             if (
                 (this->m_sequenceTracker[pending].seq == cmdSeq) &&
@@ -78,13 +80,14 @@ namespace Svc {
                 ) {
                 portToCall = this->m_sequenceTracker[pending].callerPort;
                 context = this->m_sequenceTracker[pending].context;
+                destination = this->m_sequenceTracker[pending].source;
                 FW_ASSERT(opCode == this->m_sequenceTracker[pending].opCode);
                 FW_ASSERT(portToCall < this->getNum_seqCmdStatus_OutputPorts());
                 this->m_sequenceTracker[pending].used = false;
                 break;
             }
         }
-
+        //TODO issue here with context
         if (portToCall != -1) {
             // call port to report status
             if (this->isConnected_seqCmdStatus_OutputPort(portToCall)) {
@@ -101,7 +104,9 @@ namespace Svc {
             // if the cmd executed correctly, we send a FW_PACKET_RET_OK
             if (response.e == Fw::CmdResponse::OK)
             {
-                Fw::RetPacket ret(Fw::ComPacket::ComPacketType::FW_PACKET_RET_OK, cmdSeq);
+                Fw::RetPacket ret(Fw::ComPacket::ComPacketType::FW_PACKET_RET_OK, 
+                                    cmdSeq, 
+                                    destination);
                 com.serialize(ret);
                 //this->retPktOut_out(0, com, 0);
                 this->comOut_out(0, com, 0);
@@ -109,7 +114,10 @@ namespace Svc {
             }
             else
             {
-                Fw::RetPacket ret(Fw::ComPacket::ComPacketType::FW_PACKET_RET_ERR, cmdSeq, Fw::RetPacket::Code::ERROR_CMD_FAILED);
+                Fw::RetPacket ret(Fw::ComPacket::ComPacketType::FW_PACKET_RET_ERR, 
+                                    cmdSeq, 
+                                    Fw::RetPacket::Code::ERROR_CMD_FAILED, 
+                                    destination);
                 com.serialize(ret);
                 //this->retPktOut_out(0, com, 0);
                 this->comOut_out(0, com, 0);
@@ -188,6 +196,9 @@ namespace Svc {
 
         Fw::CmdPacket cmdPkt;
         Fw::SerializeStatus stat = cmdPkt.deserialize(data);
+        //U8 source_id = (context && 0xff0000) >> 16;
+        Components::Node source((Components::Node::T)((context & 0xff0000) >> 16));
+        context = context & 0x00ffff;
 
         if (stat != Fw::FW_SERIALIZE_OK) {
             Fw::DeserialStatus serErr(static_cast<Fw::DeserialStatus::t>(stat));
@@ -222,6 +233,7 @@ namespace Svc {
                         this->m_sequenceTracker[pending].seq = this->m_seq;
                         this->m_sequenceTracker[pending].context = context;
                         this->m_sequenceTracker[pending].callerPort = portNum;
+                        this->m_sequenceTracker[pending].source = source;
                         break;
                     }
                 }

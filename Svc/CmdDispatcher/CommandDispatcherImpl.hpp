@@ -17,6 +17,7 @@
 #include <Svc/CmdDispatcher/CommandDispatcherComponentAc.hpp>
 #include <Os/Mutex.hpp>
 #include <CommandDispatcherImplCfg.hpp>
+#include <Fw/Ports/Node/NodeEnumAc.hpp>
 
 namespace Svc {
 
@@ -173,6 +174,7 @@ namespace Svc {
                         FwOpcodeType opCode; //!< opcode being tracked
                         U32 context; //!< context passed by user
                         NATIVE_INT_TYPE callerPort; //!< port command source port
+                        Components::Node source;         // source of the command
                 } m_sequenceTracker[CMD_DISPATCHER_SEQUENCER_TABLE_SIZE]; //!< sequence tracking port for command completions;
 
                 U32 m_seq; //!< current command sequence number

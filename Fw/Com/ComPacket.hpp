@@ -35,13 +35,18 @@ namespace Fw {
                 
             } ComPacketType;
 
-            Components::Node dest = Components::Node::MCU;
             
             ComPacket();
             virtual ~ComPacket();
 
+            Components::Node getDestNode();
+            void setDestNode(Components::Node destNode);
+            
+            SerializeStatus deserializeDestNode(SerializeBufferBase& buffer);
+
         protected:
             ComPacketType m_type;
+            Components::Node dest = Components::Node::MCU;
             SerializeStatus serializeBase(SerializeBufferBase& buffer) const ; // called by derived classes to serialize common fields
             SerializeStatus deserializeBase(SerializeBufferBase& buffer); // called by derived classes to deserialize common fields
     };

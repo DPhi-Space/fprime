@@ -102,7 +102,8 @@ class Deframer :
     //! The implementation of DeframingProtocolInterface::route
     //! Send a data packet
     void route(
-        Fw::Buffer& packetBuffer //!< The packet buffer
+        Fw::Buffer& packetBuffer, //!< The packet buffer
+        Components::Node source
     );
 
     //! The implementation of DeframingProtocolInterface::allocate

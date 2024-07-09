@@ -24,8 +24,16 @@ namespace Fw {
      /*    FW_ASSERT(0);
         return FW_SERIALIZE_OK; // for compiler */
 
+        // serialize the destination node
+        SerializeStatus stat = buffer.serialize(this->dest.e);
+        
+        if (stat != Fw::FW_SERIALIZE_OK) {
+            return stat;
+        }
+
+
         // serialize the packet type
-        SerializeStatus stat = buffer.serialize(this->m_type);
+        stat = buffer.serialize(this->m_type);
         if (stat != Fw::FW_SERIALIZE_OK) {
             return stat;
         }
@@ -37,7 +45,7 @@ namespace Fw {
             return stat;
         }
         // Serialize the ComBuffer
-        return buffer.serialize(this->m_argBuffer.getBuffAddr(),m_argBuffer.getBuffLength(),true);
+        return buffer.serialize(this->m_argBuffer.getBuffAddr(), m_argBuffer.getBuffLength(), true);
 
     }
 

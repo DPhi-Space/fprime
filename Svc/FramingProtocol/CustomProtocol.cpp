@@ -242,12 +242,17 @@ namespace Svc {
         // That causes issues in routing; adjust size.
         FW_ASSERT(buffer.getSize() >= size + 1);
         
-        buffer.setSize(size + 1);
+        // we request 4 extra bytes for the Components::Node source 
+        buffer.setSize(sizeof(Components::Node::SerialType) + size);
         // we set the first byte to the source node
-        buffer.getData()[0] = static_cast<U8>(source.e);
+        //buffer.getData()[0] = static_cast<U8>(source.e);
+        
+        // we serialize the source node of the incoming packet 
+        // into the buffer (which will be 4 bytes)
+        buffer.getSerializeRepr().serialize(source);
         
         // the rest of the buffer is filled as normal
-        status = ring.peek(buffer.getData() + 1, size, this->header_size);
+        status = ring.peek(buffer.getData() + sizeof(Components::Node::SerialType), size, this->header_size);
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
 
         // TODO we need to put the source node into the buffer so that the CgDeframer can

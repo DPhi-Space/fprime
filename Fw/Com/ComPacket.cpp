@@ -28,9 +28,13 @@ namespace Fw {
     SerializeStatus ComPacket::deserializeBase(SerializeBufferBase& buffer) {
         FwPacketDescriptorType serVal;
         SerializeStatus stat;
+        Components::Node destNode;
         // TODO At least for now, we do not need to deserialize the destNode, as it is handled by the CgDeframer
         // the issue is that we need to deserialize the destNode in the CgFramer to know where to send it
-        //stat = buffer.deserialize(destNode);
+        stat = buffer.deserialize(destNode);
+        if (FW_SERIALIZE_OK == stat) {
+            this->dest = destNode;
+        }
         stat = buffer.deserialize(serVal);
         if (FW_SERIALIZE_OK == stat) {
             this->m_type = static_cast<ComPacketType>(serVal);

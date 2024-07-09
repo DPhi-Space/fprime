@@ -31,7 +31,7 @@ namespace Svc {
         (void)Os::Task::delay(Fw::Time(1, 0));
         Fw::Logger::logMsg("Exiting with abort signal and core dump file.\n",0,0,0,0,0,0);
 
-        (void)raise( SIGABRT );
+            (void)raise( SIGABRT );
         exit(1);
     }
 

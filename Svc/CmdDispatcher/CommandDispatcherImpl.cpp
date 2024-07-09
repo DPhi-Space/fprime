@@ -195,7 +195,6 @@ namespace Svc {
 
         Fw::CmdPacket cmdPkt;
         Fw::SerializeStatus stat = cmdPkt.deserialize(data);
-        //U8 source_id = (context && 0xff0000) >> 16;
         Components::Node source((Components::Node::T)((context & 0xff0000) >> 16));
         context = context & 0x00ffff;
 
@@ -252,8 +251,9 @@ namespace Svc {
                 // send the command (which should already be packed into a command)
                 // to the ComQueue for it to be framed and sent out the drivers.
                 // we set the cmd seq id to the current one 
-                data.getBuffAddr()[4] = static_cast<U8>((this->m_seq & 0xFF00) >> 2);
-                data.getBuffAddr()[5] = static_cast<U8>((this->m_seq & 0x00FF));
+                
+                data.getBuffAddr()[8] = static_cast<U8>((this->m_seq & 0xFF00) >> 2);
+                data.getBuffAddr()[9] = static_cast<U8>((this->m_seq & 0x00FF));
                 this->comOut_out(0, data, context);
             }
             else

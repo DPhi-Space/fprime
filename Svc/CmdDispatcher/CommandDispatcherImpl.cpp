@@ -108,7 +108,6 @@ namespace Svc {
                                     cmdSeq, 
                                     destination);
                 com.serialize(ret);
-                //this->retPktOut_out(0, com, 0);
                 this->comOut_out(0, com, 0);
 
             }

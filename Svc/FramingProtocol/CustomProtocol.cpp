@@ -94,12 +94,13 @@ namespace Svc {
         m_interface->send(buffer);
     }
 
-    void CgFraming::frame_ack(const U8 packetID) {
+    void CgFraming::frame_ack(const U8 packetID, Components::Node destination) {
         std::cout << "[CgFraming] Sending ACK for packetID " << static_cast<unsigned int>(packetID) <<std::endl;
         FW_ASSERT(m_interface != nullptr);
         CgFrameHeader::HalfTokenType total = static_cast<CgFrameHeader::HalfTokenType>
                                                 ( this->header_size + sizeof(I32) + HASH_DIGEST_LENGTH);
-        CgFrameHeader::HalfTokenType metadata = (Components::Node::MPU<<8) | (Components::Node::GDS);
+        
+        CgFrameHeader::HalfTokenType metadata = (Components::Node::MPU<<8) | (destination);
         CgFrameHeader::HalfTokenType size = sizeof(I32);
         
         Fw::Buffer buffer = m_interface->allocate(total);

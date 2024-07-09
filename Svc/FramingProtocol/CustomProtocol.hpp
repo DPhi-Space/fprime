@@ -51,7 +51,7 @@ namespace Svc {
       Components::Node dest_node;
 
       void set_node(Components::Node node);
-      void frame_ack(const U8 packetID);
+      void frame_ack(const U8 packetID, Components::Node destination);
 
     private:
       U8 packet_id = 0;

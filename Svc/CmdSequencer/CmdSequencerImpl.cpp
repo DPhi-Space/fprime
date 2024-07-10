@@ -11,7 +11,10 @@
 #include <Fw/Types/SerialBuffer.hpp>
 #include <Svc/CmdSequencer/CmdSequencerImpl.hpp>
 #include <Fw/Com/ComPacket.hpp>
+#include <Fw/Cmd/CmdPacket.hpp>
 #include <Fw/Types/Serializable.hpp>
+
+
 extern "C" {
 #include <Utils/Hash/libcrc/lib_crc.h>
 }
@@ -372,7 +375,7 @@ namespace Svc {
         Fw::Time currTime = this->getTime();
         // check to see if a command time is pending
         if (this->m_cmdTimer.isExpiredAt(currTime)) {
-            this->comCmdOut_out(0, m_record.m_command, 0);
+            this->comCmdOut_out(0, m_record.m_command, Fw::CmdPacket::CmdContext::CMD_SEQUENCER_CONTEXT);
             this->m_cmdTimer.clear();
             // start command timeout timer
             this->setCmdTimeout(currTime);
@@ -551,7 +554,7 @@ namespace Svc {
         performCmd_Step_ABSOLUTE(Fw::Time& currentTime)
     {
         if (currentTime >= this->m_record.m_timeTag) {
-            this->comCmdOut_out(0, m_record.m_command, 0);
+            this->comCmdOut_out(0, m_record.m_command,  Fw::CmdPacket::CmdContext::CMD_SEQUENCER_CONTEXT);
             this->setCmdTimeout(currentTime);
         }
         else {

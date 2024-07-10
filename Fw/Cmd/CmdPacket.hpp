@@ -30,11 +30,13 @@ namespace Fw {
                 INTERNAL_CMD_CONTEXT    = 0xFFFF,
                 EXTERNAL_CMD_CONTEXT    = 0xFAFA,
                 RETPACKET_IN            = 0xABAB,
-                RETPACKET_OUT           = 0xBBBB
+                RETPACKET_OUT           = 0xBBBB,
+                CMD_SEQUENCER_CONTEXT
             } CmdContext;
 
 
             SerializeStatus serialize(SerializeBufferBase& buffer) const; //!< serialize contents
+            SerializeStatus deserializeWithoutDest(SerializeBufferBase& buffer);
             SerializeStatus deserialize(SerializeBufferBase& buffer);
             FwOpcodeType getOpCode() const;
             CmdArgBuffer& getArgBuffer();

@@ -42,6 +42,18 @@ namespace Fw {
         return stat;
     }
 
+    SerializeStatus ComPacket::deserializeWithoutDest(SerializeBufferBase& buffer) {
+        FwPacketDescriptorType serVal;
+        SerializeStatus stat;
+        
+        stat = buffer.deserialize(serVal);
+        if (FW_SERIALIZE_OK == stat) {
+            this->m_type = static_cast<ComPacketType>(serVal);
+        }
+        return stat;
+    }
+
+
     SerializeStatus ComPacket::deserializeDestNode(SerializeBufferBase& buffer) {
         SerializeStatus stat;
         Components::Node destNode;

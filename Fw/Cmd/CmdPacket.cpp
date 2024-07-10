@@ -80,6 +80,35 @@ namespace Fw {
         return stat;
     }
 
+
+    SerializeStatus CmdPacket::deserializeWithoutDest(SerializeBufferBase& buffer) {
+    
+
+        SerializeStatus stat = ComPacket::deserializeWithoutDest(buffer);
+        if (stat != FW_SERIALIZE_OK) {
+            return stat;
+        }
+
+        // double check packet type
+        if (this->m_type != FW_PACKET_COMMAND) {
+            return FW_DESERIALIZE_TYPE_MISMATCH;
+        }
+
+        stat = buffer.deserialize(this->m_opcode);
+        if (stat != FW_SERIALIZE_OK) {
+            return stat;
+        }
+
+        // if non-empty, copy data
+        if (buffer.getBuffLeft()) {
+            // copy the serialized arguments to the buffer
+            stat = buffer.copyRaw(this->m_argBuffer,buffer.getBuffLeft());
+        }
+
+        return stat;
+    }
+
+
     FwOpcodeType CmdPacket::getOpCode() const {
         return this->m_opcode;
     }

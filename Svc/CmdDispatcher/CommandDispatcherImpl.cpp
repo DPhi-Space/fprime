@@ -194,10 +194,21 @@ namespace Svc {
     void CommandDispatcherImpl::seqCmdBuff_handler(NATIVE_INT_TYPE portNum, Fw::ComBuffer& data, U32 context) {
 
         Fw::CmdPacket cmdPkt;
-        Fw::SerializeStatus stat = cmdPkt.deserialize(data);
         Components::Node source((Components::Node::T)((context & 0xff0000) >> 16));
+        Fw::SerializeStatus stat;
         context = context & 0x00ffff;
 
+
+        if (context == Fw::CmdPacket::CmdContext::CMD_SEQUENCER_CONTEXT)
+        {
+            stat = cmdPkt.deserializeWithoutDest(data);
+        }
+        else
+        {
+            stat = cmdPkt.deserialize(data);
+        }
+
+        
         if (stat != Fw::FW_SERIALIZE_OK) {
             Fw::DeserialStatus serErr(static_cast<Fw::DeserialStatus::t>(stat));
             this->log_WARNING_HI_MalformedCommand(serErr);
@@ -211,7 +222,7 @@ namespace Svc {
         U32 entry;
         bool entryFound = false;
 
-        for (entry = 0; entry < FW_NUM_ARRAY_ELEMENTS(this->m_entryTable); entry++) {
+            for (entry = 0; entry < FW_NUM_ARRAY_ELEMENTS(this->m_entryTable); entry++) {
             if ((this->m_entryTable[entry].used) and (cmdPkt.getOpCode() == this->m_entryTable[entry].opcode)) {
                 entryFound = true;
                 break;

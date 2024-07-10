@@ -41,7 +41,7 @@ namespace Fw {
 
             Components::Node getDestNode();
             void setDestNode(Components::Node destNode);
-            
+            SerializeStatus deserializeWithoutDest(SerializeBufferBase& buffer);
             SerializeStatus deserializeDestNode(SerializeBufferBase& buffer);
 
         protected:

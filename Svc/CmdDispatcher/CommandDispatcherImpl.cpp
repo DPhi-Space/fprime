@@ -74,10 +74,8 @@ namespace Svc {
         Components::Node destination;
 
         for (U32 pending = 0; pending < FW_NUM_ARRAY_ELEMENTS(this->m_sequenceTracker); pending++) {
-            if (
-                (this->m_sequenceTracker[pending].seq == cmdSeq) &&
-                (this->m_sequenceTracker[pending].used)
-                ) {
+            if ((this->m_sequenceTracker[pending].seq == cmdSeq) &&(this->m_sequenceTracker[pending].used)) 
+            {
                 portToCall = this->m_sequenceTracker[pending].callerPort;
                 context = this->m_sequenceTracker[pending].context;
                 destination = this->m_sequenceTracker[pending].source;
@@ -140,43 +138,26 @@ namespace Svc {
         {
             response = Fw::CmdResponse::EXECUTION_ERROR;
         }
-
-        if (stat != Fw::FW_SERIALIZE_OK) {
-            Fw::DeserialStatus serErr(static_cast<Fw::DeserialStatus::t>(stat));
-            this->log_WARNING_HI_MalformedCommand(serErr);
-            // should notify the cmd sequencer here 
-            /* if (this->isConnected_seqCmdStatus_OutputPort(portNum)) {
-                this->seqCmdStatus_out(portNum, retPkt.getOpCode(), context, Fw::CmdResponse::VALIDATION_ERROR);
-            } */
-            return;
-        }
-        // check response and log
-      /*   if (Fw::CmdResponse::OK == response.e) {
-            this->log_COMMAND_OpCodeCompleted(opCode);
-        }
-        else {
-            this->m_numCmdErrors++;
-            this->tlmWrite_CommandErrors(this->m_numCmdErrors);
-            FW_ASSERT(response.e != Fw::CmdResponse::OK);
-            this->log_COMMAND_OpCodeError(opCode, response);
-        } */
-
+        
         // look for command source
         NATIVE_INT_TYPE portToCall = -1;
         //U32 cmdContext;
         U16 cmdSeq = retPkt.getCmdSeq();
         FwOpcodeType opCode;
 
+        if (stat != Fw::FW_SERIALIZE_OK) {
+            Fw::DeserialStatus serErr(static_cast<Fw::DeserialStatus::t>(stat));
+            this->log_WARNING_HI_MalformedCommand(serErr);
+            return;
+        }
+      
+      
         for (U32 pending = 0; pending < FW_NUM_ARRAY_ELEMENTS(this->m_sequenceTracker); pending++) {
-            if (
-                (this->m_sequenceTracker[pending].seq == cmdSeq) &&
-                (this->m_sequenceTracker[pending].used)
-                ) {
+            if ((this->m_sequenceTracker[pending].seq == cmdSeq) &&(this->m_sequenceTracker[pending].used)) 
+            {
                 portToCall = this->m_sequenceTracker[pending].callerPort;
                 //cmdContext = this->m_sequenceTracker[pending].context;
                 opCode = this->m_sequenceTracker[pending].opCode;
-                
-                /* FW_ASSERT(opCode == this->m_sequenceTracker[pending].opCode);*/
                 FW_ASSERT(portToCall < this->getNum_seqCmdStatus_OutputPorts());
                 this->m_sequenceTracker[pending].used = false;
                 break;
@@ -188,6 +169,17 @@ namespace Svc {
             if (this->isConnected_seqCmdStatus_OutputPort(portToCall)) {
                 this->seqCmdStatus_out(portToCall, opCode, cmdSeq, response);
             }
+        }
+
+        // check response and log
+        if (Fw::CmdResponse::OK == response.e) {
+            this->log_COMMAND_OpCodeCompleted(opCode);
+        }
+        else {
+            this->m_numCmdErrors++;
+            this->tlmWrite_CommandErrors(this->m_numCmdErrors);
+            FW_ASSERT(response.e != Fw::CmdResponse::OK);
+            this->log_COMMAND_OpCodeError(opCode, response);
         }
     }
 
@@ -228,14 +220,17 @@ namespace Svc {
                 break;
             }
         }
+
         if ((entryFound and this->isConnected_compCmdSend_OutputPort(this->m_entryTable[entry].port))
-            or (context == Fw::CmdPacket::CmdContext::EXTERNAL_CMD_CONTEXT)) {
+            or (entryFound and context == Fw::CmdPacket::CmdContext::EXTERNAL_CMD_CONTEXT)) {
             // register command in command tracker only if response port is connect
             if (this->isConnected_seqCmdStatus_OutputPort(portNum)) {
                 bool pendingFound = false;
 
-                for (U32 pending = 0; pending < FW_NUM_ARRAY_ELEMENTS(this->m_sequenceTracker); pending++) {
-                    if (not this->m_sequenceTracker[pending].used) {
+                for (U32 pending = 0; pending < FW_NUM_ARRAY_ELEMENTS(this->m_sequenceTracker); pending++) 
+                {
+                    if (not this->m_sequenceTracker[pending].used) 
+                    {
                         pendingFound = true;
                         this->m_sequenceTracker[pending].used = true;
                         this->m_sequenceTracker[pending].opCode = cmdPkt.getOpCode();
@@ -285,11 +280,13 @@ namespace Svc {
                 this->tlmWrite_CommandsDispatched(this->m_numCmdsDispatched);
             }
         }
-        else {
+        else 
+        {
             this->log_WARNING_HI_InvalidCommand(cmdPkt.getOpCode());
             this->m_numCmdErrors++;
             // Fail command back to port, if connected
-            if (this->isConnected_seqCmdStatus_OutputPort(portNum)) {
+            if (this->isConnected_seqCmdStatus_OutputPort(portNum)) 
+            {
                 this->seqCmdStatus_out(portNum, cmdPkt.getOpCode(), context, Fw::CmdResponse::INVALID_OPCODE);
             }
             this->tlmWrite_CommandErrors(this->m_numCmdErrors);

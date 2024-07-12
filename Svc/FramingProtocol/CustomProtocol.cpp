@@ -53,7 +53,7 @@ namespace Svc {
         CgFrameHeader::HalfTokenType total = static_cast<CgFrameHeader::HalfTokenType>
                                                         (real_data_size + this->header_size + HASH_DIGEST_LENGTH);
 
-        CgFrameHeader::HalfTokenType metadata = (Components::Node::MPU<<8) | (this->dest_node);
+        CgFrameHeader::HalfTokenType metadata = static_cast<CgFrameHeader::HalfTokenType>((Components::Node::MPU<<8) | (this->dest_node));
 
         Fw::Buffer buffer = m_interface->allocate(total);
         Fw::SerializeBufferBase& serializer = buffer.getSerializeRepr();
@@ -97,10 +97,9 @@ namespace Svc {
     void CgFraming::frame_ack(const U8 packetID, Components::Node destination) {
         std::cout << "[CgFraming] Sending ACK for packetID " << static_cast<unsigned int>(packetID) <<std::endl;
         FW_ASSERT(m_interface != nullptr);
-        CgFrameHeader::HalfTokenType total = static_cast<CgFrameHeader::HalfTokenType>
-                                                ( this->header_size + sizeof(I32) + HASH_DIGEST_LENGTH);
+        CgFrameHeader::HalfTokenType total = static_cast<CgFrameHeader::HalfTokenType>( this->header_size + sizeof(I32) + HASH_DIGEST_LENGTH);
         
-        CgFrameHeader::HalfTokenType metadata = (Components::Node::MPU<<8) | (destination);
+        CgFrameHeader::HalfTokenType metadata = static_cast<CgFrameHeader::HalfTokenType>((Components::Node::MPU<<8) | (destination));
         CgFrameHeader::HalfTokenType size = sizeof(I32);
         
         Fw::Buffer buffer = m_interface->allocate(total);
@@ -236,11 +235,11 @@ namespace Svc {
         // we add an extra byte to the buffer we want to allocate
         // so as to serialize the source of the frame coming in into
         // the buffer, which will be decoded by the higher levels of data pipeline
-        Fw::Buffer buffer = m_interface->allocate(size + 1);
+        Fw::Buffer buffer = m_interface->allocate( static_cast<U32>(size + 1));
 
         // Some allocators may return buffers larger than requested.
         // That causes issues in routing; adjust size.
-        FW_ASSERT(buffer.getSize() >= size + 1);
+        FW_ASSERT(buffer.getSize() >= static_cast<U32>(size + 1));
         
         // we request 4 extra bytes for the Components::Node source 
         buffer.setSize(sizeof(Components::Node::SerialType) + size);

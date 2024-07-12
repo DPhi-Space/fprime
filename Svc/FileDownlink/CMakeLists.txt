@@ -17,6 +17,7 @@ set(MOD_DEPS
   Fw/FilePacket
   Utils/Hash
   CFDP/Checksum
+  Fw/Ports/Node
 )
 register_fprime_module()
 ### UTs ###

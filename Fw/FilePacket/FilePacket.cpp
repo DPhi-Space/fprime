@@ -167,4 +167,13 @@ namespace Fw {
     return status;
   }
 
+  Components::Node::T FilePacket::getDestinationNode() const {
+    return this->destination;
+  }
+
+  void FilePacket::setDestinationNode(Components::Node dest){
+    this->destination = dest.e;
+  }
+
+
 }

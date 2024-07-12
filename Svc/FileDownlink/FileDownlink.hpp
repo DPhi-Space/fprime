@@ -79,6 +79,14 @@ namespace Svc {
           //! Constructor
           File() : m_size(0) { }
 
+          void setDestinationNode(Components::Node dest){
+            this->destination = dest;
+          }
+
+          Components::Node getDestinationNode(){
+            return this->destination;
+          }
+
         PRIVATE:
 
           //! The source file name
@@ -95,6 +103,8 @@ namespace Svc {
 
           //! The checksum for the file
           CFDP::Checksum m_checksum;
+
+          Components::Node destination;
 
         public:
 
@@ -124,6 +134,10 @@ namespace Svc {
           //! Get the destination file name
           Fw::LogStringArg& getDestName(void) {
             return this->m_destName;
+          }
+
+          Components::Node getDestination(void) const{
+            return this->destination;
           }
 
           //! Get the underlying OS file
@@ -247,6 +261,7 @@ namespace Svc {
         FwOpcodeType opCode; // Op code of command, only set for CMD sources.
         U32 cmdSeq; // CmdSeq number, only set for CMD sources.
         U32 context; // Context id of request, only set for PORT sources.
+        Components::Node destination; 
       };
 
       //! Enumeration for packet types
@@ -349,6 +364,18 @@ namespace Svc {
           const Fw::CmdStringArg& destFilename //!< The name of the destination file on the ground
       );
 
+      //! Handler implementation for command SendFileToNode
+      //!
+      //! Read a named file off the disk. Divide it into packets and send the packets for transmission to the ground.
+      void SendFileToNode_cmdHandler(
+          FwOpcodeType opCode, //!< The opcode
+          U32 cmdSeq, //!< The command sequence number
+          const Fw::CmdStringArg& sourceFilename, //!< The name of the on-board file to send
+          const Fw::CmdStringArg& destFilename, //!< The name of the destination file on the ground
+          Components::Node destinationNode
+      ) override;
+
+
       //! Implementation for FileDownlink_Cancel command handler
       //!
       void Cancel_cmdHandler(
@@ -379,7 +406,8 @@ namespace Svc {
           const char* sourceFilename, //!< The name of the on-board file to send
           const char* destFilename, //!< The name of the destination file on the ground
           U32 startOffset, //!< Starting offset of the source file
-          U32 length //!< Number of bytes to send from starting offset. Length of 0 implies until the end of the file
+          U32 length, //!< Number of bytes to send from starting offset. Length of 0 implies until the end of the file
+          Components::Node dest
       );
 
       //Individual packet transfer functions

@@ -19,7 +19,8 @@ namespace Svc {
         m_numCmdErrors(0)
     {
         memset(this->m_entryTable, 0, sizeof(this->m_entryTable));
-        memset(this->m_sequenceTracker, 0, sizeof(this->m_sequenceTracker));
+        //memset(this->m_sequenceTracker, 0, sizeof(this->m_sequenceTracker));
+        
     }
 
     CommandDispatcherImpl::~CommandDispatcherImpl() {
@@ -186,7 +187,7 @@ namespace Svc {
     void CommandDispatcherImpl::seqCmdBuff_handler(NATIVE_INT_TYPE portNum, Fw::ComBuffer& data, U32 context) {
 
         Fw::CmdPacket cmdPkt;
-        Components::Node source((Components::Node::T)((context & 0xff0000) >> 16));
+        Components::Node source(static_cast<Components::Node::T>((context & 0xff0000) >> 16));
         Fw::SerializeStatus stat;
         context = context & 0x00ffff;
 

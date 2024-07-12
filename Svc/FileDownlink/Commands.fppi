@@ -17,3 +17,12 @@ async command SendPartial(
                            length: U32 @< Number of bytes to send from starting offset. Length of 0 implies until the end of the file
                          ) \
   opcode 0x02
+
+
+@ Read a named file off the disk. Divide it into packets and send the packets for transmission to the ground.
+async command SendFileToNode(
+                        sourceFilename: string size 100 @< The name of the on-board file to send
+                        destFilename: string size 100 @< The name of the destination file on the ground
+                        destinationNode: Components.Node
+                      ) \
+  opcode 0x03

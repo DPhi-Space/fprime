@@ -7,6 +7,7 @@
 #ifndef SVC_FILEDOWNLINK_FILEDOWNLINKCFG_HPP_
 #define SVC_FILEDOWNLINK_FILEDOWNLINKCFG_HPP_
 #include <FpConfig.hpp>
+#include <Fw/Ports/Node/NodeEnumAc.hpp>
 
 namespace Svc {
     // If this is set to true, the run handler will look to
@@ -20,7 +21,8 @@ namespace Svc {
     static const bool FILEDOWNLINK_COMMAND_FAILURES_DISABLED = true;
     // Size of the internal file downlink buffer. This must now be static as
     // file down maintains its own internal buffer.
-    static const U32 FILEDOWNLINK_INTERNAL_BUFFER_SIZE = FW_COM_BUFFER_MAX_SIZE-sizeof(FwPacketDescriptorType);
+    static const U32 FILEDOWNLINK_INTERNAL_BUFFER_SIZE = FW_COM_BUFFER_MAX_SIZE
+                                                            - sizeof(FwPacketDescriptorType);
 }
 
 #endif /* SVC_FILEDOWNLINK_FILEDOWNLINKCFG_HPP_ */

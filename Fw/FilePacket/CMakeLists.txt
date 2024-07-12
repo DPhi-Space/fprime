@@ -20,6 +20,7 @@ set(MOD_DEPS
   Fw/Types
   CFDP/Checksum
   Fw/Buffer
+  Fw/Ports/Node
 )
 # For shared libraries, Os must exist in the module list
 if (BUILD_SHARED_LIBS)

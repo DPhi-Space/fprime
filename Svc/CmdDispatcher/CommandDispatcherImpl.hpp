@@ -175,7 +175,16 @@ namespace Svc {
                         U32 context; //!< context passed by user
                         NATIVE_INT_TYPE callerPort; //!< port command source port
                         Components::Node source;         // source of the command
-                } m_sequenceTracker[CMD_DISPATCHER_SEQUENCER_TABLE_SIZE]; //!< sequence tracking port for command completions;
+
+                        SequenceTracker() :     used(false), 
+                                                seq(0), 
+                                                opCode(0), 
+                                                context(0), 
+                                                callerPort(0), 
+                                                source(Components::Node::T::MCU) {}
+
+
+                } m_sequenceTracker[CMD_DISPATCHER_SEQUENCER_TABLE_SIZE] = {}; //!< sequence tracking port for command completions;
 
                 U32 m_seq; //!< current command sequence number
 

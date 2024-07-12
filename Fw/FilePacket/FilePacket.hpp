@@ -18,6 +18,7 @@
 #include <FpConfig.hpp>
 #include <Fw/Types/SerialBuffer.hpp>
 #include <Fw/Types/Serializable.hpp>
+#include <Fw/Ports/Node/NodeEnumAc.hpp>
 
 namespace Fw {
 
@@ -40,6 +41,7 @@ namespace Fw {
         T_CANCEL = 3,
         T_NONE = 255
       } Type;
+
 
       //! The type of a path name
       class PathName {
@@ -86,6 +88,8 @@ namespace Fw {
 
           //! Write this PathName to a SerialBuffer
           SerializeStatus toSerialBuffer(SerialBuffer& serialBuffer) const;
+
+          
 
       };
 
@@ -154,13 +158,15 @@ namespace Fw {
           //! The destination path
           PathName m_destinationPath;
 
+          //Components::Node::T destination;
+
         public:
 
           //! Initialize a StartPacket with sequence number 0
           void initialize(
               const U32 fileSize, //!< The file size
               const char *const sourcePath, //!< The source path
-              const char *const destinationPath //!< The destination path
+              const char *const destinationPath  //!< The destination path
           );
 
           //! Compute the buffer size needed to hold this StartPacket
@@ -348,13 +354,23 @@ namespace Fw {
 
       };
 
+
+
     public:
 
       // ----------------------------------------------------------------------
       // Constructor
       // ----------------------------------------------------------------------
 
-      FilePacket() { this->m_header.m_type = T_NONE; }
+      FilePacket() {
+        this->m_header.m_type = T_NONE; 
+        this->destination = Components::Node::OTV;
+      }
+
+      FilePacket(Components::Node dest) {
+        this->m_header.m_type = T_NONE; 
+        this->destination = dest.e;
+      }      
 
     public:
 
@@ -410,6 +426,10 @@ namespace Fw {
       //!
       SerializeStatus toBuffer(Buffer& buffer) const;
 
+      Components::Node::T getDestinationNode() const;
+
+      void setDestinationNode(Components::Node dest);
+
     PRIVATE:
 
       // ----------------------------------------------------------------------
@@ -419,6 +439,8 @@ namespace Fw {
       //! Initialize this from a SerialBuffer
       //!
       SerializeStatus fromSerialBuffer(SerialBuffer& serialBuffer);
+
+      
 
     PRIVATE:
 
@@ -445,6 +467,10 @@ namespace Fw {
       //! this, seen as a Cancel packet
       //!
       CancelPacket m_cancelPacket;
+      
+      // we use the raw enum values because Cpp does not like 
+      // the mix between unions and complex class destructors 
+      Components::Node::T destination;
 
   };
 

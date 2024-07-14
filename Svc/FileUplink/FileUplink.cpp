@@ -54,20 +54,25 @@ namespace Svc {
     )
   {
     Fw::FilePacket filePacket;
-    const Fw::SerializeStatus status = filePacket.fromBuffer(buffer);
+    U8 packetID = buffer.getData()[0];
+    U32 context = buffer.getData()[1];
+
+    Fw::Buffer fileDataBuffer(buffer.getData() + 1, buffer.getSize() - 1, buffer.getContext());
+
+    const Fw::SerializeStatus status = filePacket.fromBuffer(fileDataBuffer);
     if (status != Fw::FW_SERIALIZE_OK) {
         this->log_WARNING_HI_DecodeError(status);
     } else {
         Fw::FilePacket::Type header_type = filePacket.asHeader().getType();
         switch (header_type) {
           case Fw::FilePacket::T_START:
-            this->handleStartPacket(filePacket.asStartPacket());
+            this->handleStartPacket(filePacket.asStartPacket(), packetID, context);
             break;
           case Fw::FilePacket::T_DATA:
-            this->handleDataPacket(filePacket.asDataPacket());
+            this->handleDataPacket(filePacket.asDataPacket(), packetID, context);
             break;
           case Fw::FilePacket::T_END:
-            this->handleEndPacket(filePacket.asEndPacket());
+            this->handleEndPacket(filePacket.asEndPacket(), packetID, context);
             break;
           case Fw::FilePacket::T_CANCEL:
             this->handleCancelPacket();
@@ -93,7 +98,7 @@ namespace Svc {
   // Private helper functions
   // ----------------------------------------------------------------------
 
-  void FileUplink ::handleStartPacket(const Fw::FilePacket::StartPacket& startPacket)
+  void FileUplink ::handleStartPacket(const Fw::FilePacket::StartPacket& startPacket, U8 packetID, U32 context)
   {
     // Clear all event throttles in preparation for new start packet
     this->log_WARNING_HI_FileWriteError_ThrottleClear();
@@ -107,6 +112,7 @@ namespace Svc {
     }
     const Os::File::Status status = this->m_file.open(startPacket);
     if (status == Os::File::OP_OK) {
+      this->sendAck_out(0, packetID, context);
       this->goToDataMode();
     }
     else {
@@ -115,7 +121,7 @@ namespace Svc {
     }
   }
 
-  void FileUplink ::handleDataPacket(const Fw::FilePacket::DataPacket& dataPacket)
+  void FileUplink ::handleDataPacket(const Fw::FilePacket::DataPacket& dataPacket, U8 packetID, U32 context)
   {
     this->m_packetsReceived.packetReceived();
     if (this->m_receiveMode != DATA) {
@@ -138,9 +144,11 @@ namespace Svc {
     if (status != Os::File::OP_OK) {
       this->m_warnings.fileWrite(this->m_file.name);
     }
+    // TODO check if should add an else here 
+    this->sendAck_out(0, packetID, context);
   }
 
-  void FileUplink ::handleEndPacket(const Fw::FilePacket::EndPacket& endPacket)
+  void FileUplink ::handleEndPacket(const Fw::FilePacket::EndPacket& endPacket, U8 packetID, U32 context)
   {
     this->m_packetsReceived.packetReceived();
     if (this->m_receiveMode == DATA) {
@@ -148,6 +156,7 @@ namespace Svc {
       this->checkSequenceIndex(endPacket.asHeader().getSequenceIndex());
       this->compareChecksums(endPacket);
       this->log_ACTIVITY_HI_FileReceived(this->m_file.name);
+      this->sendAck_out(0, packetID, context);
     }
     else {
       this->m_warnings.invalidReceiveMode(Fw::FilePacket::T_END);

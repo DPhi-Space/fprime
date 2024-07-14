@@ -239,13 +239,13 @@ namespace Svc {
       // ----------------------------------------------------------------------
 
       //! Handle a start packet
-      void handleStartPacket(const Fw::FilePacket::StartPacket& startPacket);
+      void handleStartPacket(const Fw::FilePacket::StartPacket& startPacket, U8 packetID, U32 context);
 
       //! Handle a data packet
-      void handleDataPacket(const Fw::FilePacket::DataPacket& dataPacket);
+      void handleDataPacket(const Fw::FilePacket::DataPacket& dataPacket, U8 packetID, U32 context);
 
       //! Handle an end packet
-      void handleEndPacket(const Fw::FilePacket::EndPacket& endPacket);
+      void handleEndPacket(const Fw::FilePacket::EndPacket& endPacket, U8 packetID, U32 context);
 
       //! Handle a cancel packet
       void handleCancelPacket();

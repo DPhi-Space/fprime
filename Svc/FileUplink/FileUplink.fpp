@@ -19,7 +19,10 @@ module Svc {
     @ Ping out
     output port pingOut: Svc.Ping
 
-    # ----------------------------------------------------------------------
+    @ Port for sending an ack back for the FilePkt when it is valid
+    output port sendAck: Components.PktAck
+
+    # ------------------------------
     # Special Ports
     # ----------------------------------------------------------------------
 

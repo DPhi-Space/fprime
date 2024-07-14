@@ -7,7 +7,7 @@
 
 #include <Svc/CmdDispatcher/CommandDispatcherImpl.hpp>
 #include <Fw/Cmd/CmdPacket.hpp>
-#include "../../Ports/RetPacket.hpp"
+#include <Fw/Ports/RetPacket/RetPacket.hpp>
 #include <Fw/Types/Assert.hpp>
 #include <cstdio>
 

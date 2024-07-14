@@ -10,4 +10,9 @@ set(SOURCE_FILES
   "${CMAKE_CURRENT_LIST_DIR}/ComPacket.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ComBuffer.cpp"
 )
+
+set(MOD_DEPS
+     Fw/Ports/Node
+     Fw/Ports
+ )
 register_fprime_module()

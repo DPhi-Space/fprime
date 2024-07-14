@@ -18,6 +18,8 @@ set(MOD_DEPS
   Fw/FilePacket
   Utils/Hash
   CFDP/Checksum
+  Fw/Ports/AckPacket
+  Fw/Ports
 )
 register_fprime_module()
 

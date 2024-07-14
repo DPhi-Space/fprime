@@ -10,10 +10,11 @@
 set(SOURCE_FILES
   "${CMAKE_CURRENT_LIST_DIR}/CmdDispatcher.fpp"
   "${CMAKE_CURRENT_LIST_DIR}/CommandDispatcherImpl.cpp"
-  "../../../Ports/RetPacket.cpp"
 )
 
-
+set(MOD_DEPS
+     Fw/Ports/RetPacket
+ )
 register_fprime_module()
 ### UTs ###
 set(UT_SOURCE_FILES

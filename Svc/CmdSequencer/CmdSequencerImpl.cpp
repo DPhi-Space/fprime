@@ -343,9 +343,12 @@ namespace Svc {
             this->m_cmdTimeoutTimer.clear();
             if (response != Fw::CmdResponse::OK) {
                 this->commandError(this->m_executedCount, opcode, response.e);
-                this->performCmd_Cancel();
+                // TODO for now we don't want command sequences to not continue execution of command exection 
+                //this->performCmd_Cancel();
             }
-            else if (this->m_runMode == RUNNING && this->m_stepMode == AUTO) {
+            //else if (this->m_runMode == RUNNING && this->m_stepMode == AUTO) {
+            
+            if (this->m_runMode == RUNNING && this->m_stepMode == AUTO) {
                 // Auto mode
                 this->commandComplete(opcode);
                 if (not this->m_sequence->hasMoreRecords()) {

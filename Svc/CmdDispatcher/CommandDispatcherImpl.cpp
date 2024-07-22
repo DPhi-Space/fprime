@@ -154,7 +154,7 @@ namespace Svc {
       
       
         for (U32 pending = 0; pending < FW_NUM_ARRAY_ELEMENTS(this->m_sequenceTracker); pending++) {
-            if ((this->m_sequenceTracker[pending].seq == cmdSeq) &&(this->m_sequenceTracker[pending].used)) 
+            if ((this->m_sequenceTracker[pending].seq == cmdSeq) && (this->m_sequenceTracker[pending].used)) 
             {
                 portToCall = this->m_sequenceTracker[pending].callerPort;
                 //cmdContext = this->m_sequenceTracker[pending].context;

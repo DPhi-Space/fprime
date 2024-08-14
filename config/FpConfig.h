@@ -12,11 +12,11 @@
 #ifndef FPCONFIG_H_
 #define FPCONFIG_H_
 
-// ----------------------------------------------------------------------
-// Type aliases
-// ----------------------------------------------------------------------
+ // ----------------------------------------------------------------------
+ // Type aliases
+ // ----------------------------------------------------------------------
 
-// The type of port indices and smaller sizes internal to the software
+ // The type of port indices and smaller sizes internal to the software
 typedef PlatformIndexType FwIndexType;
 #define PRI_FwIndexType PRI_PlatformIndexType
 
@@ -58,7 +58,7 @@ typedef enum {
     TB_PROC_TIME,         //!< Indicates time is processor cycle time. Not tied to external time
     TB_WORKSTATION_TIME,  //!< Time as reported on workstation where software is running. For testing.
     TB_DONT_CARE =
-        0xFFFF  //!< Don't care value for sequences. If FwTimeBaseStoreType is changed, value should be changed
+    0xFFFF  //!< Don't care value for sequences. If FwTimeBaseStoreType is changed, value should be changed
 } TimeBase;
 #define FW_CONTEXT_DONT_CARE 0xFF  //!< Don't care value for time contexts in sequences
 
@@ -215,7 +215,8 @@ typedef FwIndexType FwQueueSizeType;
 // Note: users who want alternate asserts should set assert level to FW_NO_ASSERT and define FW_ASSERT in this header
 #define FW_ASSERT_DFL_MSG_LEN 1024  //!< Maximum assert message length when using the default assert handler
 #ifndef FW_ASSERT_LEVEL
-#define FW_ASSERT_LEVEL FW_FILENAME_ASSERT  //!< Defines the type of assert used
+//#define FW_ASSERT_LEVEL FW_FILENAME_ASSERT  //!< Defines the type of assert used
+#define FW_ASSERT_LEVEL FW_NO_ASSERT
 //#define FW_ASSERT_LEVEL FW_RELATIVE_PATH_ASSERT
 #endif
 
@@ -401,7 +402,7 @@ typedef FwIndexType FwQueueSizeType;
 #endif
 
 #ifndef FW_FILE_CHUNK_SIZE
-#define FW_FILE_CHUNK_SIZE 512  //!< Chunk size for working with files
+#define FW_FILE_CHUNK_SIZE 220  //!< Chunk size for working with files
 #endif
 
 

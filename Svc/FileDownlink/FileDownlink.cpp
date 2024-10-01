@@ -15,6 +15,7 @@
 #include <Fw/Types/StringUtils.hpp>
 #include <Os/QueueString.hpp>
 #include <limits>
+#include <iostream>
 
 namespace Svc {
 
@@ -98,6 +99,7 @@ namespace Svc {
     switch (this->m_mode.get())
     {
     case Mode::IDLE: {
+      ////std::cout << "[FileDownlink] State: IDLE " << std::endl;
       NATIVE_INT_TYPE real_size = 0;
       NATIVE_INT_TYPE prio = 0;
       Os::Queue::QueueStatus stat = m_fileQueue.receive(
@@ -122,6 +124,7 @@ namespace Svc {
       break;
     }
     case Mode::COOLDOWN: {
+      //std::cout << "[FileDownlink] State: COOLDOWN " << std::endl;
       if (this->m_curTimer >= this->m_cooldown) {
         this->m_curTimer = 0;
         this->m_mode.set(Mode::IDLE);
@@ -132,6 +135,7 @@ namespace Svc {
       break;
     }
     case Mode::WAIT: {
+      //std::cout << "[FileDownlink] State: WAIT " << std::endl;
       //If current timeout is too-high and we are waiting for a packet, issue a timeout
       if (this->m_curTimer >= this->m_timeout) {
         this->m_curTimer = 0;
@@ -145,9 +149,10 @@ namespace Svc {
       break;
     }
 
-                   // if we reach this point, it is because the FileDownlink is ready
-                   // but the AckTracker still has unacked data packets.
     case Mode::ENDPKT_BLOCKED: {
+      //std::cout << "[FileDownlink] State: ENDBPKT_BLOCKED  " << std::endl;
+      // if we reach this point, it is because the FileDownlink is ready
+      // but the AckTracker still has unacked data packets.
       bool unacked_empty = false;
       this->unackedListEmpty_out(0, unacked_empty);
       // if the acktracker has no unacked data packets, we can send the EndPacket
@@ -227,10 +232,16 @@ namespace Svc {
   {
     //If this is a stale buffer (old, timed-out, or both), then ignore its return.
     //File downlink actions only respond to the return of the most-recently-sent buffer.
+    // TODO commented this out because i think it causes a deadlock due to the ACKTRACKER unorder packet list
     if (this->m_lastBufferId != fwBuffer.getContext() + 1 ||
       this->m_mode.get() == Mode::IDLE) {
       return;
     }
+
+    if (this->m_mode.get() == Mode::IDLE) {
+      return;
+    }
+
     //Non-ignored buffers cannot be returned in "DOWNLINK" and "IDLE" state.  Only in "WAIT", "CANCEL" state.
     FW_ASSERT(this->m_mode.get() == Mode::WAIT || this->m_mode.get() == Mode::CANCEL || this->m_mode.get() == Mode::ENDPKT_BLOCKED, this->m_mode.get());
     //If the last packet has been sent (and is returning now) then finish the file

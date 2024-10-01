@@ -20,7 +20,7 @@ namespace Svc {
     {
         memset(this->m_entryTable, 0, sizeof(this->m_entryTable));
         //memset(this->m_sequenceTracker, 0, sizeof(this->m_sequenceTracker));
-        
+
     }
 
     CommandDispatcherImpl::~CommandDispatcherImpl() {
@@ -75,7 +75,7 @@ namespace Svc {
         Components::Node destination;
 
         for (U32 pending = 0; pending < FW_NUM_ARRAY_ELEMENTS(this->m_sequenceTracker); pending++) {
-            if ((this->m_sequenceTracker[pending].seq == cmdSeq) &&(this->m_sequenceTracker[pending].used)) 
+            if ((this->m_sequenceTracker[pending].seq == cmdSeq) && (this->m_sequenceTracker[pending].used))
             {
                 portToCall = this->m_sequenceTracker[pending].callerPort;
                 context = this->m_sequenceTracker[pending].context;
@@ -103,19 +103,19 @@ namespace Svc {
             // if the cmd executed correctly, we send a FW_PACKET_RET_OK
             if (response.e == Fw::CmdResponse::OK)
             {
-                Fw::RetPacket ret(Fw::ComPacket::ComPacketType::FW_PACKET_RET_OK, 
-                                    cmdSeq, 
-                                    destination);
+                Fw::RetPacket ret(Fw::ComPacket::ComPacketType::FW_PACKET_RET_OK,
+                    cmdSeq,
+                    destination);
                 com.serialize(ret);
                 this->comOut_out(0, com, 0);
 
             }
             else
             {
-                Fw::RetPacket ret(Fw::ComPacket::ComPacketType::FW_PACKET_RET_ERR, 
-                                    cmdSeq, 
-                                    Fw::RetPacket::Code::ERROR_CMD_FAILED, 
-                                    destination);
+                Fw::RetPacket ret(Fw::ComPacket::ComPacketType::FW_PACKET_RET_ERR,
+                    cmdSeq,
+                    Fw::RetPacket::Code::ERROR_CMD_FAILED,
+                    destination);
                 com.serialize(ret);
                 //this->retPktOut_out(0, com, 0);
                 this->comOut_out(0, com, 0);
@@ -125,13 +125,13 @@ namespace Svc {
         }
     }
 
-    void CommandDispatcherImpl ::retPktIn_handler(FwIndexType portNum,Fw::ComBuffer& data,U32 context)
+    void CommandDispatcherImpl::retPktIn_handler(FwIndexType portNum, Fw::ComBuffer& data, U32 context)
     {
         Fw::RetPacket retPkt;
         Fw::SerializeStatus stat = retPkt.deserialize(data);
         Fw::CmdResponse response;
 
-        if (retPkt.getType() == Fw::ComPacket::ComPacketType::FW_PACKET_RET_OK) 
+        if (retPkt.getType() == Fw::ComPacket::ComPacketType::FW_PACKET_RET_OK)
         {
             response = Fw::CmdResponse::OK;
         }
@@ -139,7 +139,7 @@ namespace Svc {
         {
             response = Fw::CmdResponse::EXECUTION_ERROR;
         }
-        
+
         // look for command source
         NATIVE_INT_TYPE portToCall = -1;
         //U32 cmdContext;
@@ -151,10 +151,10 @@ namespace Svc {
             this->log_WARNING_HI_MalformedCommand(serErr);
             return;
         }
-      
-      
+
+
         for (U32 pending = 0; pending < FW_NUM_ARRAY_ELEMENTS(this->m_sequenceTracker); pending++) {
-            if ((this->m_sequenceTracker[pending].seq == cmdSeq) && (this->m_sequenceTracker[pending].used)) 
+            if ((this->m_sequenceTracker[pending].seq == cmdSeq) && (this->m_sequenceTracker[pending].used))
             {
                 portToCall = this->m_sequenceTracker[pending].callerPort;
                 //cmdContext = this->m_sequenceTracker[pending].context;
@@ -201,11 +201,11 @@ namespace Svc {
             stat = cmdPkt.deserialize(data);
         }
 
-        
+
         if (stat != Fw::FW_SERIALIZE_OK) {
             Fw::DeserialStatus serErr(static_cast<Fw::DeserialStatus::t>(stat));
             this->log_WARNING_HI_MalformedCommand(serErr);
-            if (this->isConnected_seqCmdStatus_OutputPort(portNum)) { 
+            if (this->isConnected_seqCmdStatus_OutputPort(portNum)) {
                 this->seqCmdStatus_out(portNum, cmdPkt.getOpCode(), context, Fw::CmdResponse::VALIDATION_ERROR);
             }
             return;
@@ -215,7 +215,7 @@ namespace Svc {
         U32 entry;
         bool entryFound = false;
 
-            for (entry = 0; entry < FW_NUM_ARRAY_ELEMENTS(this->m_entryTable); entry++) {
+        for (entry = 0; entry < FW_NUM_ARRAY_ELEMENTS(this->m_entryTable); entry++) {
             if ((this->m_entryTable[entry].used) and (cmdPkt.getOpCode() == this->m_entryTable[entry].opcode)) {
                 entryFound = true;
                 break;
@@ -228,9 +228,9 @@ namespace Svc {
             if (this->isConnected_seqCmdStatus_OutputPort(portNum)) {
                 bool pendingFound = false;
 
-                for (U32 pending = 0; pending < FW_NUM_ARRAY_ELEMENTS(this->m_sequenceTracker); pending++) 
+                for (U32 pending = 0; pending < FW_NUM_ARRAY_ELEMENTS(this->m_sequenceTracker); pending++)
                 {
-                    if (not this->m_sequenceTracker[pending].used) 
+                    if (not this->m_sequenceTracker[pending].used)
                     {
                         pendingFound = true;
                         this->m_sequenceTracker[pending].used = true;
@@ -258,7 +258,7 @@ namespace Svc {
                 // send the command (which should already be packed into a command)
                 // to the ComQueue for it to be framed and sent out the drivers.
                 // we set the cmd seq id to the current one 
-                
+
                 data.getBuffAddr()[8] = static_cast<U8>((this->m_seq & 0xFF00) >> 2);
                 data.getBuffAddr()[9] = static_cast<U8>((this->m_seq & 0x00FF));
                 this->comOut_out(0, data, context);
@@ -281,12 +281,12 @@ namespace Svc {
                 this->tlmWrite_CommandsDispatched(this->m_numCmdsDispatched);
             }
         }
-        else 
+        else
         {
             this->log_WARNING_HI_InvalidCommand(cmdPkt.getOpCode());
             this->m_numCmdErrors++;
             // Fail command back to port, if connected
-            if (this->isConnected_seqCmdStatus_OutputPort(portNum)) 
+            if (this->isConnected_seqCmdStatus_OutputPort(portNum))
             {
                 this->seqCmdStatus_out(portNum, cmdPkt.getOpCode(), context, Fw::CmdResponse::INVALID_OPCODE);
             }

@@ -154,9 +154,11 @@ namespace Svc {
     if (status != Os::File::OP_OK) {
       this->m_warnings.fileWrite(this->m_file.name);
     }
-    // TODO check if should add an else here 
-    this->sendAck_out(0, packetID, source);
-    this->m_packetCounter++;
+    else {
+      // TODO check if should add an else here 
+      this->sendAck_out(0, packetID, source);
+    }
+    //this->m_packetCounter++;
 
   }
 
@@ -193,11 +195,16 @@ namespace Svc {
 
   void FileUplink::checkSequenceIndex(const U32 sequenceIndex)
   {
-    if (sequenceIndex != this->m_lastSequenceIndex + 1) {
+    if (sequenceIndex != this->m_lastSequenceIndex + 1)
+    {
       this->m_warnings.packetOutOfOrder(
         sequenceIndex,
         this->m_lastSequenceIndex
       );
+    }
+    else
+    {
+      this->m_packetCounter++;
     }
     this->m_lastSequenceIndex = sequenceIndex;
   }

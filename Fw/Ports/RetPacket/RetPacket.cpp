@@ -8,7 +8,7 @@ namespace Fw {
     // Empty RetPacket, to use use deserialization
     RetPacket::RetPacket()
     {
-        this->data.resetSer();        
+        this->data.resetSer();
     }
 
     // For RetPacket ERRORS
@@ -35,18 +35,18 @@ namespace Fw {
     RetPacket::~RetPacket() {}
 
 
-    SerializeStatus RetPacket::serialize(SerializeBufferBase& buffer) const 
+    SerializeStatus RetPacket::serialize(SerializeBufferBase& buffer) const
     {
         // serialize the destination node
         SerializeStatus stat = buffer.serialize(this->dest.e);
-        
+
         if (stat != Fw::FW_SERIALIZE_OK) {
             return stat;
         }
 
         // serialize the packet type
         stat = buffer.serialize(this->m_type);
-        
+
         if (stat != Fw::FW_SERIALIZE_OK) {
             return stat;
         }
@@ -79,17 +79,19 @@ namespace Fw {
         return this->m_type;
     }
 
-    SerializeStatus RetPacket::deserialize(SerializeBufferBase& buffer) 
+    SerializeStatus RetPacket::deserialize(SerializeBufferBase& buffer)
     {
         I32 type;
         U16 cmdSeqId;
         Components::Node destination;
-        
-        SerializeStatus status = buffer.deserialize(destination);
+
+        //SerializeStatus status = buffer.deserialize(destination);
+        SerializeStatus status = buffer.deserialize(dest);
         if (status != Fw::FW_SERIALIZE_OK) {
             return status;
         }
-        
+        destination = static_cast<Components::Node>(dest);
+
         status = buffer.deserialize(type);
         if (status != Fw::FW_SERIALIZE_OK) {
             return status;
@@ -98,21 +100,21 @@ namespace Fw {
         if (status != Fw::FW_SERIALIZE_OK) {
             return status;
         }
-        
+
         this->dest = destination;
         this->m_type = static_cast<Fw::ComPacket::ComPacketType>(type);
         this->cmdSeq = cmdSeqId;
-        
+
         return status;
     }
 
 
-    Fw::ComBuffer& RetPacket::getBuffer() 
+    Fw::ComBuffer& RetPacket::getBuffer()
     {
         FW_ASSERT(this->m_type != ComPacket::FW_PACKET_RET_OK);
         return this->data;
     }
-   
+
 
 
 

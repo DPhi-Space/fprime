@@ -11,22 +11,22 @@ namespace Svc {
 
     static U8 deframed_packetID = 0;
 
-    CgFraming::CgFraming(): Svc::FramingProtocol(){
+    CgFraming::CgFraming() : Svc::FramingProtocol() {
 #ifdef USE_PACKETID
-            std::cout << "[CgFraming] Using PacketID in Framing" << std::endl;
-            this->header_size = CgFrameHeader::SIZE + 1; // we add one to take into account the packetID
+        std::cout << "[CgFraming] Using PacketID in Framing" << std::endl;
+        this->header_size = CgFrameHeader::SIZE + 1; // we add one to take into account the packetID
 #else
-            this->header_size = CgFrameHeader::SIZE;
+        this->header_size = CgFrameHeader::SIZE;
 #endif
     }
-    
-    CgDeframing::CgDeframing(): Svc::DeframingProtocol(){
+
+    CgDeframing::CgDeframing() : Svc::DeframingProtocol() {
 #ifdef USE_PACKETID
-            this->header_size = CgFrameHeader::SIZE + 1; // we add one to take into account the packetID
+        this->header_size = CgFrameHeader::SIZE + 1; // we add one to take into account the packetID
 #else
-            this->header_size = CgFrameHeader::SIZE;
+        this->header_size = CgFrameHeader::SIZE;
 #endif
-      
+
     }
 
     void CgFraming::setup(Svc::FramingProtocolInterface& interface) {
@@ -34,7 +34,7 @@ namespace Svc {
         m_interface = &interface;
     }
 
-    void CgFraming::set_node(Components::Node node){
+    void CgFraming::set_node(Components::Node node) {
         this->dest_node = node;
     }
 
@@ -49,11 +49,11 @@ namespace Svc {
         FW_ASSERT(m_interface != nullptr);
         // Use of I32 size is explicit as ComPacketType will be specifically serialized as an I32
         CgFrameHeader::HalfTokenType real_data_size = static_cast<CgFrameHeader::HalfTokenType>
-                                                        (size + ((packet_type != Fw::ComPacket::FW_PACKET_UNKNOWN) ? sizeof(I32) : 0));
+            (size + ((packet_type != Fw::ComPacket::FW_PACKET_UNKNOWN) ? sizeof(I32) : 0));
         CgFrameHeader::HalfTokenType total = static_cast<CgFrameHeader::HalfTokenType>
-                                                        (real_data_size + this->header_size + HASH_DIGEST_LENGTH);
+            (real_data_size + this->header_size + HASH_DIGEST_LENGTH);
 
-        CgFrameHeader::HalfTokenType metadata = static_cast<CgFrameHeader::HalfTokenType>((Components::Node::MPU<<8) | (this->dest_node));
+        CgFrameHeader::HalfTokenType metadata = static_cast<CgFrameHeader::HalfTokenType>((Components::Node::MPU << 8) | (this->dest_node));
 
         Fw::Buffer buffer = m_interface->allocate(total);
         Fw::SerializeBufferBase& serializer = buffer.getSerializeRepr();
@@ -66,21 +66,21 @@ namespace Svc {
 
         status = serializer.serialize(metadata);
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
-        
+
         status = serializer.serialize(real_data_size);
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
 
 #ifdef USE_PACKETID
-            status = serializer.serialize(this->packet_id);
-            FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
+        status = serializer.serialize(this->packet_id);
+        FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
 #endif
-        
+
         // Serialize packet type if supplied, otherwise it *must* be present in the data
         if (packet_type != Fw::ComPacket::FW_PACKET_UNKNOWN) {
             status = serializer.serialize(static_cast<I32>(packet_type)); // I32 used for enum storage
             FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
         }
-        
+
         status = serializer.serialize(data, size, true);  // Serialize without length
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
 
@@ -88,20 +88,20 @@ namespace Svc {
         Utils::Hash::hash(buffer.getData(), total - HASH_DIGEST_LENGTH, hash);
         status = serializer.serialize(hash.getBuffAddr(), HASH_DIGEST_LENGTH, true);
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
-        
+
         buffer.setSize(total);
-        
+
         m_interface->send(buffer);
     }
 
     void CgFraming::frame_ack(const U8 packetID, Components::Node destination) {
-        std::cout << "[CgFraming] Sending ACK for packetID " << static_cast<unsigned int>(packetID) <<std::endl;
+        std::cout << "[CgFraming] Sending ACK for PacketID " << static_cast<unsigned int>(packetID) << std::endl;
         FW_ASSERT(m_interface != nullptr);
-        CgFrameHeader::HalfTokenType total = static_cast<CgFrameHeader::HalfTokenType>( this->header_size + sizeof(I32) + HASH_DIGEST_LENGTH);
-        
-        CgFrameHeader::HalfTokenType metadata = static_cast<CgFrameHeader::HalfTokenType>((Components::Node::MPU<<8) | (destination));
+        CgFrameHeader::HalfTokenType total = static_cast<CgFrameHeader::HalfTokenType>(this->header_size + sizeof(I32) + HASH_DIGEST_LENGTH);
+
+        CgFrameHeader::HalfTokenType metadata = static_cast<CgFrameHeader::HalfTokenType>((Components::Node::MPU << 8) | (destination));
         CgFrameHeader::HalfTokenType size = sizeof(I32);
-        
+
         Fw::Buffer buffer = m_interface->allocate(total);
         Fw::SerializeBufferBase& serializer = buffer.getSerializeRepr();
         Utils::HashBuffer hash;
@@ -112,30 +112,30 @@ namespace Svc {
 
         status = serializer.serialize(metadata);                                    // 2B
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
-        
+
         status = serializer.serialize(size);                                        // 2B
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
 
         status = serializer.serialize(packetID);                                    // 1B
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
-        
+
         status = serializer.serialize(Fw::ComPacket::ComPacketType::FW_PACKET_ACK); // 4B
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
-        
+
         // Calculate and add transmission hash
         Utils::Hash::hash(buffer.getData(), total - HASH_DIGEST_LENGTH, hash);
         status = serializer.serialize(hash.getBuffAddr(), HASH_DIGEST_LENGTH, true);// 4B
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
-        
+
         buffer.setSize(total);
-        
+
         m_interface->send(buffer, true);
     }
 
 
-/*
-            CgDeframing
-*/
+    /*
+                CgDeframing
+    */
 
     bool CgDeframing::validate(Types::CircularBuffer& ring, U32 size) {
         Utils::Hash hash;
@@ -168,7 +168,7 @@ namespace Svc {
     }
 
     Svc::DeframingProtocol::DeframingStatus CgDeframing::deframe(Types::CircularBuffer& ring, U32& needed) {
-        
+
         CgFrameHeader::TokenType start = 0;
         CgFrameHeader::TokenType size_dest = 0;
         CgFrameHeader::HalfTokenType size = 0;
@@ -182,7 +182,7 @@ namespace Svc {
             needed = this->header_size;
             return Svc::DeframingProtocol::DEFRAMING_MORE_NEEDED;
         }
-        
+
         // Read start value from header
         Fw::SerializeStatus status = ring.peek(start, 0);
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
@@ -194,17 +194,17 @@ namespace Svc {
         // Read size from header
         status = ring.peek(size_dest, sizeof(CgFrameHeader::TokenType));
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
-        
-        
+
+
         // Read size from header
         //status = ring.peek(this->packet_id, sizeof(CgFrameHeader::TokenType) * 2);
         status = ring.peek(deframed_packetID, sizeof(CgFrameHeader::TokenType) * 2);
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
         //std::cout << "[ProtocolDeframe] Received packetID "<< static_cast<unsigned int>(this->packet_id) <<std::endl;
-        source      = static_cast<Components::Node::T>( (size_dest & 0xFF000000)>>24);
-        destination = static_cast<Components::Node::T>( (size_dest & 0x00FF0000)>>16);
-        size        = static_cast<CgFrameHeader::HalfTokenType>((size_dest & 0x0000FFFF));
-        
+        source = static_cast<Components::Node::T>((size_dest & 0xFF000000) >> 24);
+        destination = static_cast<Components::Node::T>((size_dest & 0x00FF0000) >> 16);
+        size = static_cast<CgFrameHeader::HalfTokenType>((size_dest & 0x0000FFFF));
+
         const U16 maxU16 = std::numeric_limits<U16>::max();
 
         if (size > maxU16 - (this->header_size + HASH_DIGEST_LENGTH)) {
@@ -235,21 +235,21 @@ namespace Svc {
         // we add an extra byte to the buffer we want to allocate
         // so as to serialize the source of the frame coming in into
         // the buffer, which will be decoded by the higher levels of data pipeline
-        Fw::Buffer buffer = m_interface->allocate( static_cast<U32>(size + 1));
+        Fw::Buffer buffer = m_interface->allocate(static_cast<U32>(size + 1));
 
         // Some allocators may return buffers larger than requested.
         // That causes issues in routing; adjust size.
         FW_ASSERT(buffer.getSize() >= static_cast<U32>(size + 1));
-        
+
         // we request 4 extra bytes for the Components::Node source 
         buffer.setSize(sizeof(Components::Node::SerialType) + size);
         // we set the first byte to the source node
         //buffer.getData()[0] = static_cast<U8>(source.e);
-        
+
         // we serialize the source node of the incoming packet 
         // into the buffer (which will be 4 bytes)
         buffer.getSerializeRepr().serialize(source);
-        
+
         // the rest of the buffer is filled as normal
         status = ring.peek(buffer.getData() + sizeof(Components::Node::SerialType), size, this->header_size);
         FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
@@ -257,12 +257,12 @@ namespace Svc {
         // TODO we need to put the source node into the buffer so that the CgDeframer can
         // deserialize it and send it to the CmdDispatcher or other
         m_interface->route(buffer);
-        
+
         return Svc::DeframingProtocol::DEFRAMING_STATUS_SUCCESS;
     }
-    
+
     // packetID of the deframed packet !! 
-    U8 get_packetID(){
+    U8 get_packetID() {
         //return this->packet_id;
         return deframed_packetID;
     }

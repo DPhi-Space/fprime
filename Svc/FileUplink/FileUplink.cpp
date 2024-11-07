@@ -122,7 +122,8 @@ namespace Svc {
       this->sendAck_out(0, packetID, source);
       this->m_packetCounter++;
       this->m_endPacketIndex = static_cast<U32>(this->m_file.size / FW_FILE_CHUNK_SIZE) + 1;
-      std::cout << "[FileUplink] Expecting " << (unsigned)this->m_endPacketIndex << " packets" << std::endl;
+      std::cout << "[FileUplink] Expecting " << (unsigned)this->m_endPacketIndex << " File DATA Packets" << std::endl;
+      std::cout << "[FileUplink] Expecting File END Packet at Sequence ID " << (unsigned)this->m_endPacketIndex + 1 << std::endl;
       this->goToDataMode();
     }
     else {
@@ -142,6 +143,8 @@ namespace Svc {
     this->checkSequenceIndex(sequenceIndex);
     const U32 byteOffset = dataPacket.getByteOffset();
     const U32 dataSize = dataPacket.getDataSize();
+
+    std::cout << "[FileUplink] File DATA PKT Sequence ID " << (unsigned)sequenceIndex << ". Packet ID " << (unsigned)packetID << std::endl;
     if (byteOffset + dataSize > this->m_file.size) {
       this->m_warnings.packetOutOfBounds(sequenceIndex, this->m_file.name);
       return;
@@ -165,7 +168,7 @@ namespace Svc {
   void FileUplink::handleEndPacket(const Fw::FilePacket::EndPacket& endPacket, U8 packetID, U8 source)
   {
     this->m_packetsReceived.packetReceived();
-    std::cout << "[FileUplink] Received end at packet nb " << (unsigned)this->m_packetCounter << std::endl;
+    std::cout << "[FileUplink] Received END PKT at packet nb " << (unsigned)this->m_packetCounter << std::endl;
     //if (this->m_receiveMode == DATA) {
     if (this->m_receiveMode == DATA && this->m_packetCounter >= this->m_endPacketIndex) {
       this->m_filesReceived.fileReceived();
@@ -181,6 +184,10 @@ namespace Svc {
     }
     else {
       this->m_warnings.invalidReceiveMode(Fw::FilePacket::T_END);
+      if (this->m_receiveMode == START)
+      {
+        this->sendAck_out(0, packetID, source);
+      }
     }
     //TODO implement a time out
     //this->goToStartMode();

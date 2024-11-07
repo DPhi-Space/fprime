@@ -99,7 +99,7 @@ namespace Svc {
     switch (this->m_mode.get())
     {
     case Mode::IDLE: {
-      ////std::cout << "[FileDownlink] State: IDLE " << std::endl;
+      //std::cout << "[FileDownlink] State: IDLE " << std::endl;
       NATIVE_INT_TYPE real_size = 0;
       NATIVE_INT_TYPE prio = 0;
       Os::Queue::QueueStatus stat = m_fileQueue.receive(
@@ -150,7 +150,7 @@ namespace Svc {
     }
 
     case Mode::ENDPKT_BLOCKED: {
-      //std::cout << "[FileDownlink] State: ENDBPKT_BLOCKED  " << std::endl;
+      //std::cout << "[FileDownlink] State: ENDPKT_BLOCKED  " << std::endl;
       // if we reach this point, it is because the FileDownlink is ready
       // but the AckTracker still has unacked data packets.
       bool unacked_empty = false;

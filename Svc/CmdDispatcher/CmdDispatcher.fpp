@@ -17,6 +17,9 @@ module Svc {
     @ Input Command Status Port
     async input port compCmdStat: Fw.CmdResponse
 
+    @ Input Command Status Port with return value data
+    async input port compCmdStatRet: Fw.CmdResponseRet
+
     @ Output Command Status Port
     output port seqCmdStatus: [CmdDispatcherSequencePorts] Fw.CmdResponse
 

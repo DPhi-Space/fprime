@@ -58,6 +58,74 @@ namespace Svc {
         FW_ASSERT(slotFound, static_cast<FwAssertArgType>(opCode));
     }
 
+    void CommandDispatcherImpl::compCmdStatRet_handler(NATIVE_INT_TYPE portNum, FwOpcodeType opCode, U32 cmdSeq, const Fw::CmdResponse& response, const Fw::CmdArgBuffer& data) {
+        // check response and log
+        if (Fw::CmdResponse::OK == response.e) {
+            this->log_COMMAND_OpCodeCompleted(opCode);
+        }
+        else {
+            this->m_numCmdErrors++;
+            this->tlmWrite_CommandErrors(this->m_numCmdErrors);
+            FW_ASSERT(response.e != Fw::CmdResponse::OK);
+            this->log_COMMAND_OpCodeError(opCode, response);
+        }
+        // look for command source
+        NATIVE_INT_TYPE portToCall = -1;
+        U32 context;
+        Components::Node destination;
+
+        for (U32 pending = 0; pending < FW_NUM_ARRAY_ELEMENTS(this->m_sequenceTracker); pending++) {
+            if ((this->m_sequenceTracker[pending].seq == cmdSeq) && (this->m_sequenceTracker[pending].used))
+            {
+                portToCall = this->m_sequenceTracker[pending].callerPort;
+                context = this->m_sequenceTracker[pending].context;
+                destination = this->m_sequenceTracker[pending].source;
+                FW_ASSERT(opCode == this->m_sequenceTracker[pending].opCode);
+                FW_ASSERT(portToCall < this->getNum_seqCmdStatus_OutputPorts());
+                this->m_sequenceTracker[pending].used = false;
+                break;
+            }
+        }
+        //TODO issue here with context
+        if (portToCall != -1) {
+            // call port to report status
+            if (this->isConnected_seqCmdStatus_OutputPort(portToCall)) {
+                this->seqCmdStatus_out(portToCall, opCode, context, response);
+            }
+        }
+
+        // the sending node of this cmd is expecting a RetPacket, so we frame it here and send
+        // it to the ComQueue for it to forward it back
+        if (context == Fw::CmdPacket::CmdContext::INTERNAL_CMD_CONTEXT)
+        {
+            Fw::ComBuffer com;
+
+            // if the cmd executed correctly, we send a FW_PACKET_RET_OK
+            if (response.e == Fw::CmdResponse::OK)
+            {
+                Fw::RetPacket ret(Fw::ComPacket::ComPacketType::FW_PACKET_RET_OK,
+                    cmdSeq,
+                    destination, 
+                    data);
+                com.serialize(ret);
+                this->comOut_out(0, com, 0);
+
+            }
+            else
+            {
+                Fw::RetPacket ret(Fw::ComPacket::ComPacketType::FW_PACKET_RET_ERR,
+                    cmdSeq,
+                    Fw::RetPacket::Code::ERROR_CMD_FAILED,
+                    destination);
+                com.serialize(ret);
+                //this->retPktOut_out(0, com, 0);
+                this->comOut_out(0, com, 0);
+
+            }
+
+        }
+    }
+
     void CommandDispatcherImpl::compCmdStat_handler(NATIVE_INT_TYPE portNum, FwOpcodeType opCode, U32 cmdSeq, const Fw::CmdResponse& response) {
         // check response and log
         if (Fw::CmdResponse::OK == response.e) {

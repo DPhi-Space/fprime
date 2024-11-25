@@ -66,6 +66,8 @@ namespace Svc {
                 //!  \param cmdSeq the sequence number assigned to the command when it was dispatched
                 //!  \param response the completion status of the command
                 void compCmdStat_handler(NATIVE_INT_TYPE portNum, FwOpcodeType opCode, U32 cmdSeq, const Fw::CmdResponse& response);
+
+                void compCmdStatRet_handler(NATIVE_INT_TYPE portNum, FwOpcodeType opCode, U32 cmdSeq, const Fw::CmdResponse& response,const Fw::CmdArgBuffer& data);
                 //!  \brief component command buffer handler
                 //!
                 //!  The command buffer handler is called to submit a new

@@ -3,6 +3,7 @@
 
 #include <Fw/Com/ComPacket.hpp>
 #include <Fw/Com/ComBuffer.hpp>
+#include <Fw/Cmd/CmdArgBuffer.hpp>
 #include <Fw/Time/Time.hpp>
 
 namespace Fw {
@@ -19,6 +20,7 @@ namespace Fw {
         RetPacket();
         RetPacket(Fw::ComPacket::ComPacketType type, U32 seq, Code err_code, Components::Node destination);
         RetPacket(ComPacket::ComPacketType type, U32 cmdSeq, Components::Node destination);
+        RetPacket(ComPacket::ComPacketType type, U32 cmdSeq, Components::Node destination, Fw::CmdArgBuffer data);
         //! Destructor
         virtual ~RetPacket();
 

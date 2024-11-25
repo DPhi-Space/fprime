@@ -16,7 +16,6 @@ namespace Fw {
     {
         FW_ASSERT(type == ComPacket::FW_PACKET_RET_ERR);
         this->m_type = type;
-        this->data.resetSer();
         this->code = err_code;
         this->dest = destination;
         this->cmdSeq = static_cast<U16>(seq);
@@ -28,7 +27,17 @@ namespace Fw {
         FW_ASSERT(type == ComPacket::FW_PACKET_RET_OK);
         this->m_type = type;
         this->dest = destination;
-        this->data.resetSer();
+        this->cmdSeq = static_cast<U16>(seq);
+    }
+
+    // For RetPackets OK
+    RetPacket::RetPacket(Fw::ComPacket::ComPacketType type, U32 seq, Components::Node destination, Fw::CmdArgBuffer data)
+    {
+        FW_ASSERT(type == ComPacket::FW_PACKET_RET_OK);
+        this->m_type = type;
+        this->dest = destination;
+        this->data.serialize(data);
+        this->data_size = data.getBuffLength();
         this->cmdSeq = static_cast<U16>(seq);
     }
 
@@ -60,7 +69,7 @@ namespace Fw {
         if (this->m_type == Fw::ComPacket::FW_PACKET_RET_OK)
         {
             stat = buffer.serialize(this->data_size);
-            //stat = buffer.serialize(this->data);
+            stat = buffer.serialize(this->data);
         }
         else
         {
@@ -85,7 +94,6 @@ namespace Fw {
         U16 cmdSeqId;
         Components::Node destination;
 
-        //SerializeStatus status = buffer.deserialize(destination);
         SerializeStatus status = buffer.deserialize(dest);
         if (status != Fw::FW_SERIALIZE_OK) {
             return status;

@@ -10,6 +10,7 @@
 #include <Fw/Ports/RetPacket/RetPacket.hpp>
 #include <Fw/Types/Assert.hpp>
 #include <cstdio>
+#include <iostream>
 
 namespace Svc {
     CommandDispatcherImpl::CommandDispatcherImpl(const char* name) :
@@ -105,7 +106,7 @@ namespace Svc {
             {
                 Fw::RetPacket ret(Fw::ComPacket::ComPacketType::FW_PACKET_RET_OK,
                     cmdSeq,
-                    destination, 
+                    destination,
                     data);
                 com.serialize(ret);
                 this->comOut_out(0, com, 0);
@@ -269,7 +270,6 @@ namespace Svc {
             stat = cmdPkt.deserialize(data);
         }
 
-
         if (stat != Fw::FW_SERIALIZE_OK) {
             Fw::DeserialStatus serErr(static_cast<Fw::DeserialStatus::t>(stat));
             this->log_WARNING_HI_MalformedCommand(serErr);
@@ -303,7 +303,16 @@ namespace Svc {
                         pendingFound = true;
                         this->m_sequenceTracker[pending].used = true;
                         this->m_sequenceTracker[pending].opCode = cmdPkt.getOpCode();
-                        this->m_sequenceTracker[pending].seq = this->m_seq;
+                        if (context == Fw::CmdPacket::CmdContext::INTERNAL_CMD_CONTEXT)
+                        {
+                            this->m_sequenceTracker[pending].seq = cmdPkt.getCmdSeq();
+                        }
+                        else
+                        {
+                            this->m_sequenceTracker[pending].seq = this->m_seq;
+                        }
+                        std::cout << "[CmdDisp] Cmd Seq ID " << (unsigned)this->m_sequenceTracker[pending].seq << std::endl;
+
                         this->m_sequenceTracker[pending].context = context;
                         this->m_sequenceTracker[pending].callerPort = portNum;
                         this->m_sequenceTracker[pending].source = source;
@@ -338,7 +347,8 @@ namespace Svc {
                 this->compCmdSend_out(
                     this->m_entryTable[entry].port,
                     cmdPkt.getOpCode(),
-                    this->m_seq,
+                    //this->m_seq,
+                    cmdPkt.getCmdSeq(),
                     cmdPkt.getArgBuffer());
                 // log dispatched command
                 this->log_COMMAND_OpCodeDispatched(cmdPkt.getOpCode(), this->m_entryTable[entry].port);
@@ -362,11 +372,13 @@ namespace Svc {
         }
 
         // increment sequence number
+        //TODO check if we should actually increment this depending on the context or not 
         this->m_seq++;
     }
 
     void CommandDispatcherImpl::CMD_NO_OP_cmdHandler(FwOpcodeType opCode, U32 cmdSeq) {
         Fw::LogStringArg no_op_string("Hello, World!");
+        std::cout << "[NO_OP] CMD SEQ ID " << (unsigned)cmdSeq << std::endl;
         // Log event for NO_OP here.
         this->log_ACTIVITY_HI_NoOpReceived();
         this->cmdResponse_out(opCode, cmdSeq, Fw::CmdResponse::OK);

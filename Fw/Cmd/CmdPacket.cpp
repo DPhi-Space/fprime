@@ -26,7 +26,7 @@ namespace Fw {
 
         // serialize the destination node
         SerializeStatus stat = buffer.serialize(this->dest.e);
-        
+
         if (stat != Fw::FW_SERIALIZE_OK) {
             return stat;
         }
@@ -37,7 +37,7 @@ namespace Fw {
         if (stat != Fw::FW_SERIALIZE_OK) {
             return stat;
         }
-        
+
         // serialize the number of packets
         stat = buffer.serialize(this->m_opcode);
 
@@ -62,7 +62,7 @@ namespace Fw {
         }
 
         stat = buffer.deserialize(this->m_opcode);
-        
+
         if (stat != FW_SERIALIZE_OK) {
             return stat;
         }
@@ -74,7 +74,7 @@ namespace Fw {
         // if non-empty, copy data
         if (buffer.getBuffLeft()) {
             // copy the serialized arguments to the buffer
-            stat = buffer.copyRaw(this->m_argBuffer,buffer.getBuffLeft());
+            stat = buffer.copyRaw(this->m_argBuffer, buffer.getBuffLeft());
         }
 
         return stat;
@@ -82,7 +82,7 @@ namespace Fw {
 
 
     SerializeStatus CmdPacket::deserializeWithoutDest(SerializeBufferBase& buffer) {
-    
+
 
         SerializeStatus stat = ComPacket::deserializeWithoutDest(buffer);
         if (stat != FW_SERIALIZE_OK) {
@@ -102,7 +102,7 @@ namespace Fw {
         // if non-empty, copy data
         if (buffer.getBuffLeft()) {
             // copy the serialized arguments to the buffer
-            stat = buffer.copyRaw(this->m_argBuffer,buffer.getBuffLeft());
+            stat = buffer.copyRaw(this->m_argBuffer, buffer.getBuffLeft());
         }
 
         return stat;
@@ -113,20 +113,24 @@ namespace Fw {
         return this->m_opcode;
     }
 
+    U16 CmdPacket::getCmdSeq() {
+        return this->cmdSeq;
+    }
+
     CmdArgBuffer& CmdPacket::getArgBuffer() {
         return this->m_argBuffer;
     }
 
-    void CmdPacket::setSeqId(U16 cmdSeqId){
+    void CmdPacket::setSeqId(U16 cmdSeqId) {
         this->cmdSeq = cmdSeqId;
     }
 
-    void CmdPacket::setOpcode(FwOpcodeType opcode){
+    void CmdPacket::setOpcode(FwOpcodeType opcode) {
         this->m_opcode = opcode;
     }
 
-    
-    void CmdPacket::setArgBuffer(CmdArgBuffer argbuf){
+
+    void CmdPacket::setArgBuffer(CmdArgBuffer argbuf) {
         this->m_argBuffer = argbuf;
     }
 

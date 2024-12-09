@@ -15,7 +15,7 @@
 namespace Svc {
     CommandDispatcherImpl::CommandDispatcherImpl(const char* name) :
         CommandDispatcherComponentBase(name),
-        m_seq(0),
+        m_seq(1),
         m_numCmdsDispatched(0),
         m_numCmdErrors(0)
     {
@@ -344,12 +344,23 @@ namespace Svc {
             {
                 // send command to an internal Component (i.e. inside the FS)
                 // pass arguments to argument buffer
+                U16 cmd_id = 0;
+                if (context == Fw::CmdPacket::CmdContext::INTERNAL_CMD_CONTEXT)
+                {
+                    cmd_id = cmdPkt.getCmdSeq();
+                }
+                else
+                {
+                    cmd_id = this->m_seq;
+                    std::cout << "FLAG 1" << std::endl;
+                }
+
                 this->compCmdSend_out(
                     this->m_entryTable[entry].port,
                     cmdPkt.getOpCode(),
-                    //this->m_seq,
-                    cmdPkt.getCmdSeq(),
+                    cmd_id,
                     cmdPkt.getArgBuffer());
+
                 // log dispatched command
                 this->log_COMMAND_OpCodeDispatched(cmdPkt.getOpCode(), this->m_entryTable[entry].port);
 
@@ -373,7 +384,10 @@ namespace Svc {
 
         // increment sequence number
         //TODO check if we should actually increment this depending on the context or not 
-        this->m_seq++;
+        if (context == Fw::CmdPacket::CmdContext::INTERNAL_CMD_CONTEXT)
+        {
+            this->m_seq++;
+        }
     }
 
     void CommandDispatcherImpl::CMD_NO_OP_cmdHandler(FwOpcodeType opCode, U32 cmdSeq) {

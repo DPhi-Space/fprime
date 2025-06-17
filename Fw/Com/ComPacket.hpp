@@ -15,28 +15,32 @@
 
 namespace Fw {
 
-    class ComPacket: public Serializable {
-        public:
+class ComPacket : public Serializable {
+  public:
+    typedef enum {
+        FW_PACKET_COMMAND,         // !< Command packet type - incoming
+        FW_PACKET_TELEM,           // !< Telemetry packet type - outgoing
+        FW_PACKET_LOG,             // !< Log type - outgoing
+        FW_PACKET_FILE,            // !< File type - incoming and outgoing
+        FW_PACKET_PACKETIZED_TLM,  // !< Packetized telemetry packet type
+        FW_PACKET_DP,              //!< Data product packet
+        FW_PACKET_IDLE,            // !< Idle packet
+        FW_PACKET_ACK = 0xAC,
+        FW_PACKET_RET_OK = 0xAD,
+        FW_PACKET_RET_ERR = 0xAE,
+        FW_PACKET_UNKNOWN = 0xFF  // !< Unknown packet
+    } ComPacketType;
 
-            typedef enum {
-                FW_PACKET_COMMAND, // !< Command packet type - incoming
-                FW_PACKET_TELEM, // !< Telemetry packet type - outgoing
-                FW_PACKET_LOG, // !< Log type - outgoing
-                FW_PACKET_FILE, // !< File type - incoming and outgoing
-                FW_PACKET_PACKETIZED_TLM, // !< Packetized telemetry packet type
-                FW_PACKET_DP, //!< Data product packet
-                FW_PACKET_IDLE, // !< Idle packet
-                FW_PACKET_UNKNOWN = 0xFF // !< Unknown packet
-            } ComPacketType;
+    ComPacket();
+    virtual ~ComPacket();
 
-            ComPacket();
-            virtual ~ComPacket();
-
-        protected:
-            ComPacketType m_type;
-            SerializeStatus serializeBase(SerializeBufferBase& buffer) const ; // called by derived classes to serialize common fields
-            SerializeStatus deserializeBase(SerializeBufferBase& buffer); // called by derived classes to deserialize common fields
-    };
+  protected:
+    ComPacketType m_type;
+    SerializeStatus serializeBase(
+        SerializeBufferBase& buffer) const;  // called by derived classes to serialize common fields
+    SerializeStatus deserializeBase(
+        SerializeBufferBase& buffer);  // called by derived classes to deserialize common fields
+};
 
 } /* namespace Fw */
 

@@ -82,11 +82,11 @@ jobs:
           submodules: recursive
           repository: ${{ inputs.target_repository }}
           ref: ${{ inputs.target_ref }}
-      - name: "Overlay current F´ revision"
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          path: ${{ inputs.fprime_location }}
+      #- name: "Overlay current F´ revision"
+      #  uses: actions/checkout@v4
+      #  with:
+      #    submodules: true
+      #    path: ${{ inputs.fprime_location }}
       - name: "Install requirements.txt"
         run: |
           pip3 install -r ${{ inputs.fprime_location }}/requirements.txt

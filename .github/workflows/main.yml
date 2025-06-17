@@ -1,0 +1,24 @@
+name: F´ Main CI Dispatcher
+
+on:
+  repository_dispatch:
+    types: [fprime-ci]
+
+jobs:
+  build-test:
+    uses: ./.github/workflows/build-test.yml
+
+  fpp-tests:
+    uses: ./.github/workflows/fpp-tests.yml
+
+  cmake-test:
+    uses: ./.github/workflows/cmake-test.yml
+
+  python-format:
+    uses: ./.github/workflows/python-format.yml
+
+  codeql:
+    uses: ./.github/workflows/codeql-jpl-standard.yml
+
+  spelling:
+    uses: ./.github/workflows/spelling.yml

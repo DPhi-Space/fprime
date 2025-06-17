@@ -41,7 +41,6 @@ on:
         default: "devel"
 
 jobs:
-
   build:
     runs-on: ${{ inputs.runs_on }}
     name: "Build"
@@ -49,14 +48,14 @@ jobs:
       - name: "Checkout target repository"
         uses: actions/checkout@v4
         with:
-          submodules: recursive 
+          submodules: recursive
           repository: ${{ inputs.target_repository }}
           ref: ${{ inputs.target_ref }}
-      - name: "Overlay current F´ revision"
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          path: ${{ inputs.fprime_location }}
+      #- name: "Overlay current F´ revision"
+      #  uses: actions/checkout@v4
+      #  with:
+      #    submodules: true
+      #    path: ${{ inputs.fprime_location }}
       - name: "Install requirements.txt"
         run: |
           pip3 install -r ${{ inputs.fprime_location }}/requirements.txt
@@ -107,4 +106,3 @@ jobs:
         run: |
           fprime-util check -j8 ${{ runner.debug == '1' && '--verbose' || '' }} ${{ inputs.target_platform }}
         shell: bash
-

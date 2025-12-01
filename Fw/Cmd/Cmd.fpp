@@ -31,4 +31,12 @@ module Fw {
                     response: CmdResponse @< The command response argument
                   )
 
+  @ Port for sending command responses with data
+  port CmdResponseData(
+                    opCode: FwOpcodeType @< Command Op Code
+                    cmdSeq: U32 @< Command Sequence
+                    response: CmdResponse @< The command response argument
+                    data: CmdArgBuffer
+                  )
+
 }

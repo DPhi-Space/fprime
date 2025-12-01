@@ -36,7 +36,7 @@ module Fw {
                     opCode: FwOpcodeType @< Command Op Code
                     cmdSeq: U32 @< Command Sequence
                     response: CmdResponse @< The command response argument
-                    data: CmdArgBuffer
+                    data: ComBuffer
                   )
 
 }

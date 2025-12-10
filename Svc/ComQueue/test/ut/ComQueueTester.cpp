@@ -24,7 +24,9 @@ ComQueueTester ::ComQueueTester() : ComQueueGTestBase("Tester", MAX_HISTORY_SIZE
     this->connectPorts();
 }
 
-ComQueueTester ::~ComQueueTester() {}
+ComQueueTester ::~ComQueueTester() {
+    this->component.deinit();
+}
 
 void ComQueueTester ::dispatchAll() {
     while (this->component.m_queue.getMessagesAvailable() > 0) {
@@ -34,7 +36,7 @@ void ComQueueTester ::dispatchAll() {
 
 void ComQueueTester ::configure() {
     ComQueue::QueueConfigurationTable configurationTable;
-    for (FwIndexType i = 0; i < ComQueue::TOTAL_PORT_COUNT; i++){
+    for (FwIndexType i = 0; i < ComQueue::TOTAL_PORT_COUNT; i++) {
         configurationTable.entries[i].priority = i;
         configurationTable.entries[i].depth = 3;
     }
@@ -63,9 +65,7 @@ void ComQueueTester ::emitOne() {
     dispatchAll();
 }
 
-void ComQueueTester ::emitOneAndCheck(FwIndexType expectedIndex,
-                              U8* expectedData,
-                              FwSizeType expectedSize) {
+void ComQueueTester ::emitOneAndCheck(FwIndexType expectedIndex, U8* expectedData, FwSizeType expectedSize) {
     emitOne();
     // Check that the data buffers are identical (size + data)
     Fw::Buffer emittedBuffer = this->fromPortHistory_dataOut->at(expectedIndex).data;
@@ -85,16 +85,18 @@ void ComQueueTester ::testQueueSend() {
     Fw::Buffer buffer(&data[0], sizeof(data));
     configure();
 
-    for(FwIndexType portNum = 0; portNum < ComQueue::COM_PORT_COUNT; portNum++){
+    for (FwIndexType portNum = 0; portNum < ComQueue::COM_PORT_COUNT; portNum++) {
         invoke_to_comPacketQueueIn(portNum, comBuffer, 0);
-        emitOneAndCheck(portNum, comBuffer.getBuffAddr(), comBuffer.getBuffLength());
+        emitOneAndCheck(portNum, comBuffer.getBuffAddr(), comBuffer.getSize());
     }
     clearFromPortHistory();
 
-    for(FwIndexType portNum = 0; portNum < ComQueue::BUFFER_PORT_COUNT; portNum++){
+    for (FwIndexType portNum = 0; portNum < ComQueue::BUFFER_PORT_COUNT; portNum++) {
         invoke_to_bufferQueueIn(portNum, buffer);
         emitOneAndCheck(portNum, buffer.getData(), buffer.getSize());
+        ASSERT_from_bufferReturnOut(portNum, buffer);
     }
+    ASSERT_from_bufferReturnOut_SIZE(ComQueue::BUFFER_PORT_COUNT);
     clearFromPortHistory();
     component.cleanup();
 }
@@ -105,18 +107,18 @@ void ComQueueTester ::testQueuePause() {
     Fw::Buffer buffer(&data[0], sizeof(data));
     configure();
 
-    for(FwIndexType portNum = 0; portNum < ComQueue::COM_PORT_COUNT; portNum++){
+    for (FwIndexType portNum = 0; portNum < ComQueue::COM_PORT_COUNT; portNum++) {
         invoke_to_comPacketQueueIn(portNum, comBuffer, 0);
         // Send a bunch of failures
         Fw::Success state = Fw::Success::FAILURE;
         invoke_to_comStatusIn(0, state);
         invoke_to_comStatusIn(0, state);
         invoke_to_comStatusIn(0, state);
-        emitOneAndCheck(portNum, comBuffer.getBuffAddr(), comBuffer.getBuffLength());
+        emitOneAndCheck(portNum, comBuffer.getBuffAddr(), comBuffer.getSize());
     }
     clearFromPortHistory();
 
-    for(FwIndexType portNum = 0; portNum < ComQueue::BUFFER_PORT_COUNT; portNum++){
+    for (FwIndexType portNum = 0; portNum < ComQueue::BUFFER_PORT_COUNT; portNum++) {
         invoke_to_bufferQueueIn(portNum, buffer);
         // Send a bunch of failures
         Fw::Success state = Fw::Success::FAILURE;
@@ -124,7 +126,9 @@ void ComQueueTester ::testQueuePause() {
         invoke_to_comStatusIn(0, state);
         invoke_to_comStatusIn(0, state);
         emitOneAndCheck(portNum, buffer.getData(), buffer.getSize());
+        ASSERT_from_bufferReturnOut(portNum, buffer);
     }
+    ASSERT_from_bufferReturnOut_SIZE(ComQueue::BUFFER_PORT_COUNT);
     clearFromPortHistory();
     component.cleanup();
 }
@@ -148,7 +152,7 @@ void ComQueueTester ::testPrioritySend() {
 
     component.configure(configurationTable, 0, mallocAllocator);
 
-    for(FwIndexType portNum = 0; portNum < ComQueue::COM_PORT_COUNT; portNum++){
+    for (FwIndexType portNum = 0; portNum < ComQueue::COM_PORT_COUNT; portNum++) {
         Fw::ComBuffer comBuffer(&data[portNum][0], BUFFER_LENGTH);
         invoke_to_comPacketQueueIn(portNum, comBuffer, 0);
     }
@@ -228,9 +232,9 @@ void ComQueueTester::testExternalQueueOverflow() {
         dispatchAll();
 
         if (QueueType::BUFFER_QUEUE == overflow_type) {
-            // Third message overflowed, so third bufferReturnOut
-            ASSERT_from_bufferReturnOut_SIZE(3);
-            ASSERT_from_bufferReturnOut(2, buffer);
+            // Third message overflowed, emitOne yielded a return, so fourth bufferReturnOut
+            ASSERT_from_bufferReturnOut_SIZE(4);
+            ASSERT_from_bufferReturnOut(3, buffer);
         }
 
         // emitOne() reset the throttle, then overflow again. So expect a second overflow event
@@ -291,20 +295,20 @@ void ComQueueTester ::testReadyFirst() {
     Fw::Buffer buffer(&data[0], sizeof(data));
     configure();
 
-    for(FwIndexType portNum = 0; portNum < ComQueue::COM_PORT_COUNT; portNum++){
+    for (FwIndexType portNum = 0; portNum < ComQueue::COM_PORT_COUNT; portNum++) {
         emitOne();
         invoke_to_comPacketQueueIn(portNum, comBuffer, 0);
         dispatchAll();
 
         Fw::Buffer emittedBuffer = this->fromPortHistory_dataOut->at(portNum).data;
-        ASSERT_EQ(emittedBuffer.getSize(), comBuffer.getBuffLength());
+        ASSERT_EQ(emittedBuffer.getSize(), comBuffer.getSize());
         for (FwSizeType i = 0; i < emittedBuffer.getSize(); i++) {
             ASSERT_EQ(emittedBuffer.getData()[i], comBuffer.getBuffAddr()[i]);
         }
     }
     clearFromPortHistory();
 
-    for(FwIndexType portNum = 0; portNum < ComQueue::BUFFER_PORT_COUNT; portNum++){
+    for (FwIndexType portNum = 0; portNum < ComQueue::BUFFER_PORT_COUNT; portNum++) {
         emitOne();
         invoke_to_bufferQueueIn(portNum, buffer);
         dispatchAll();
@@ -324,48 +328,31 @@ void ComQueueTester ::testContextData() {
     Fw::Buffer buffer(&data[0], sizeof(data));
     configure();
 
-    for(FwIndexType portNum = 0; portNum < ComQueue::COM_PORT_COUNT; portNum++){
+    for (FwIndexType portNum = 0; portNum < ComQueue::COM_PORT_COUNT; portNum++) {
         invoke_to_comPacketQueueIn(portNum, comBuffer, 0);
         emitOne();
         // Currently, the APID is set to the queue index, which is the same as the port number for COM ports
         FwIndexType expectedApid = portNum;
         auto emittedContext = this->fromPortHistory_dataOut->at(portNum).context;
-        ASSERT_EQ(expectedApid, emittedContext.getcomQueueIndex());
+        ASSERT_EQ(expectedApid, emittedContext.get_comQueueIndex());
     }
     clearFromPortHistory();
 
-    for(FwIndexType portNum = 0; portNum < ComQueue::BUFFER_PORT_COUNT; portNum++){
+    for (FwIndexType portNum = 0; portNum < ComQueue::BUFFER_PORT_COUNT; portNum++) {
         invoke_to_bufferQueueIn(portNum, buffer);
         emitOne();
         // APID is queue index, which is COM_PORT_COUNT + portNum for BUFFER ports
         FwIndexType expectedApid = portNum + ComQueue::COM_PORT_COUNT;
         auto emittedContext = this->fromPortHistory_dataOut->at(portNum).context;
-        ASSERT_EQ(expectedApid, emittedContext.getcomQueueIndex());
+        ASSERT_EQ(expectedApid, emittedContext.get_comQueueIndex());
     }
     clearFromPortHistory();
     component.cleanup();
 }
 
-void ComQueueTester ::testBufferQueueReturn() {
-    U8 data[BUFFER_LENGTH] = BUFFER_DATA;
-    Fw::Buffer buffer(&data[0], sizeof(data));
-    ComCfg::FrameContext context;
-    configure();
-
-    for(FwIndexType portNum = 0; portNum < ComQueue::TOTAL_PORT_COUNT; portNum++){
-        clearFromPortHistory();
-        context.setcomQueueIndex(portNum);
-        invoke_to_dataReturnIn(0, buffer, context);
-        // APIDs that correspond to an buffer originating from a Fw.Com port
-        // do no get deallocated – APIDs that correspond to a Fw.Buffer do
-        if (portNum < ComQueue::COM_PORT_COUNT) {
-            ASSERT_from_bufferReturnOut_SIZE(0);
-        } else {
-            ASSERT_from_bufferReturnOut_SIZE(1);
-            ASSERT_from_bufferReturnOut(0, buffer);
-        }
-    }
-    component.cleanup();
+void ComQueueTester ::from_dataOut_handler(FwIndexType portNum, Fw::Buffer& data, const ComCfg::FrameContext& context) {
+    this->pushFromPortEntry_dataOut(data, context);
+    this->invoke_to_dataReturnIn(0, data, context);
 }
 
 }  // end namespace Svc

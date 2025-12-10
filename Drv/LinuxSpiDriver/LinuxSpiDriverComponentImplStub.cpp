@@ -15,24 +15,25 @@
 
 namespace Drv {
 
-    bool LinuxSpiDriverComponentImpl::open(FwIndexType device,
-                                           FwIndexType select,
-                                           SpiFrequency clock,
-                                           SpiMode spiMode) {
-        return false;
-    }
+bool LinuxSpiDriverComponentImpl::open(FwIndexType device, FwIndexType select, SpiFrequency clock, SpiMode spiMode) {
+    return false;
+}
 
-    // ----------------------------------------------------------------------
-    // Handler implementations for user-defined typed input ports
-    // ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+// Handler implementations for user-defined typed input ports
+// ----------------------------------------------------------------------
 
-    void LinuxSpiDriverComponentImpl::SpiReadWrite_handler(
-            const FwIndexType portNum, Fw::Buffer &WriteBuffer,
-            Fw::Buffer &readBuffer) {
-    }
+SpiStatus LinuxSpiDriverComponentImpl::SpiWriteRead_handler(const FwIndexType portNum,
+                                                            Fw::Buffer& WriteBuffer,
+                                                            Fw::Buffer& readBuffer) {
+    return SpiStatus::SPI_OK;
+}
 
-    LinuxSpiDriverComponentImpl::~LinuxSpiDriverComponentImpl() {
+// @ DEPRECATED: Use SpiWriteRead port instead (same operation with a return value)
+void LinuxSpiDriverComponentImpl::SpiReadWrite_handler(const FwIndexType portNum,
+                                                       Fw::Buffer& WriteBuffer,
+                                                       Fw::Buffer& readBuffer) {}
 
-    }
+LinuxSpiDriverComponentImpl::~LinuxSpiDriverComponentImpl() {}
 
-} // end namespace Drv
+}  // end namespace Drv

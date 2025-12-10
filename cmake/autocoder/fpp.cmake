@@ -18,6 +18,7 @@ autocoder_setup_for_multiple_sources()
 ####
 function(locate_fpp_tools)
     # Loop through each tool, looking if it was found and check the version
+    get_expected_tool_version("fprime-fpp" FPP_VERSION)
     foreach(TOOL FPP_DEPEND FPP_TO_CPP FPP_LOCATE_DEFS FPP_TO_DICT)
         # Skipped already defined tools
         if (${TOOL})
@@ -25,7 +26,6 @@ function(locate_fpp_tools)
         endif ()
         string(TOLOWER ${TOOL} PROGRAM)
         string(REPLACE "_" "-" PROGRAM "${PROGRAM}")
-        get_expected_tool_version("fprime-${PROGRAM}" FPP_VERSION)
 
         # Clear any previous version of this find and search in this order: install dir, system path
         unset(${TOOL} CACHE)
@@ -41,7 +41,7 @@ function(locate_fpp_tools)
                 if (ENDS_WITH_EXPECTED)
                     continue()
                 endif()
-                message(STATUS "[fpp-tools] ${${TOOL}} version ${CMAKE_MATCH_1} not expected version ${FPP_VERSION}")
+                fprime_cmake_status("[fpp-tools] ${${TOOL}} version ${CMAKE_MATCH_1} not expected version ${FPP_VERSION}")
                 set(FPP_REINSTALL_ERROR_MESSAGE
                     "fpp-tools version incompatible. Found ${CMAKE_MATCH_1}, expected ${FPP_VERSION}." PARENT_SCOPE
                 )
@@ -50,11 +50,11 @@ function(locate_fpp_tools)
                         "fpp tools require 'java'. Please install 'java' and ensure it is on your PATH." PARENT_SCOPE
                 )
             else()
-                message(STATUS "[fpp-tools] ${PROGRAM} installed incorrectly.")
+                fprime_cmake_status("[fpp-tools] ${PROGRAM} installed incorrectly.")
                 set(FPP_REINSTALL_ERROR_MESSAGE "fpp tools installed incorrectly." PARENT_SCOPE)
             endif()
         else()
-            message(STATUS "[fpp-tools] Could not find ${PROGRAM}.")
+            fprime_cmake_status("[fpp-tools] Could not find ${PROGRAM}.")
         endif()
         set(FPP_FOUND FALSE PARENT_SCOPE)
         return()
@@ -172,8 +172,13 @@ function(fpp_info MODULE_NAME AC_INPUT_FILES)
     fpp_to_modules("${MODULE_NAME}" "${FILTERED_DIRECT_DEPENDENCIES}" MODULE_DEPENDENCIES)
     list(APPEND MODULE_DEPENDENCIES ${FRAMEWORK})
     list(REMOVE_DUPLICATES MODULE_DEPENDENCIES)
-    # File dependencies are any files that this depends on
-    set(FILE_DEPENDENCIES ${AC_INPUT_FILES} ${INCLUDED})
+    # File dependencies are any files that this depends on:
+    #   - AC_INPUT_FILES (direct inputs from the call)
+    #   - STDOUT (all FPP files used in the model)
+    #   - INCLUDED (all included files from the model)
+    # Then remove overlap from these lists
+    set(FILE_DEPENDENCIES ${AC_INPUT_FILES} ${STDOUT} ${INCLUDED})
+    list(REMOVE_DUPLICATES FILE_DEPENDENCIES)
 
     # Should have been inherited from previous call to `get_generated_files`
     set(GENERATED_FILES "${GENERATED_FILES}" PARENT_SCOPE)
@@ -219,6 +224,11 @@ function(fpp_setup_autocode MODULE_NAME AC_INPUT_FILES)
     endforeach()
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/fpp-import-list" "${FPP_IMPORTS}")
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/fpp-source-list" "${AC_INPUT_FILES}")
+
+    # Mark included files (.fppi) as regenerators like their .fpp parents
+    foreach (INCLUDED_FILE IN LISTS FILE_DEPENDENCIES)
+        requires_regeneration("${INCLUDED_FILE}")
+    endforeach()
 
     # Add in steps for CPP generation
     if (GENERATED_CPP)

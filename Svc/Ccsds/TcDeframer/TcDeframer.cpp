@@ -55,26 +55,29 @@ void TcDeframer ::dataIn_handler(FwIndexType portNum, Fw::Buffer& data, const Co
               static_cast<FwAssertArgType>(data.getSize()));
 
     TCHeader header;
-    Fw::SerializeStatus status = data.getDeserializer().deserialize(header);
+    Fw::SerializeStatus status = data.getDeserializer().deserializeTo(header);
     FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
     // TC protocol defines the Frame Length as number of bytes minus 1, so we add 1 back to get length in bytes
-    U16 total_frame_length = static_cast<U16>((header.getvcIdAndLength() & TCSubfields::FrameLengthMask) + 1);
-    U8 vc_id = static_cast<U8>((header.getvcIdAndLength() & TCSubfields::VcIdMask) >> TCSubfields::VcIdOffset);
-    U16 spacecraft_id = header.getflagsAndScId() & TCSubfields::SpacecraftIdMask;
+    U16 total_frame_length = static_cast<U16>((header.get_vcIdAndLength() & TCSubfields::FrameLengthMask) + 1);
+    U8 vc_id = static_cast<U8>((header.get_vcIdAndLength() & TCSubfields::VcIdMask) >> TCSubfields::VcIdOffset);
+    U16 spacecraft_id = header.get_flagsAndScId() & TCSubfields::SpacecraftIdMask;
 
     if (spacecraft_id != this->m_spacecraftId) {
         this->log_WARNING_LO_InvalidSpacecraftId(spacecraft_id, this->m_spacecraftId);
+        this->errorNotifyHelper(Ccsds::FrameError::TC_INVALID_SCID);
         this->dataReturnOut_out(0, data, context);  // drop the frame
         return;
     }
     if (data.getSize() < static_cast<Fw::Buffer::SizeType>(total_frame_length)) {
         FwSizeType maxDataAvailable = static_cast<FwSizeType>(data.getSize());
         this->log_WARNING_HI_InvalidFrameLength(total_frame_length, maxDataAvailable);
+        this->errorNotifyHelper(Ccsds::FrameError::TC_INVALID_LENGTH);
         this->dataReturnOut_out(0, data, context);  // drop the frame
         return;
     }
     if (not this->m_acceptAllVcid && vc_id != this->m_vcId) {
         this->log_ACTIVITY_LO_InvalidVcId(vc_id, this->m_vcId);
+        this->errorNotifyHelper(Ccsds::FrameError::TC_INVALID_VCID);
         this->dataReturnOut_out(0, data, context);  // drop the frame
         return;
     }
@@ -89,12 +92,13 @@ void TcDeframer ::dataIn_handler(FwIndexType portNum, Fw::Buffer& data, const Co
     TCTrailer trailer;
     auto deserializer = data.getDeserializer();
     deserializer.moveDeserToOffset(total_frame_length - TCTrailer::SERIALIZED_SIZE);
-    status = deserializer.deserialize(trailer);
+    status = deserializer.deserializeTo(trailer);
     FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
 
-    U16 transmitted_crc = trailer.getfecf();
+    U16 transmitted_crc = trailer.get_fecf();
     if (transmitted_crc != computed_crc) {
         this->log_WARNING_HI_InvalidCrc(computed_crc, transmitted_crc);
+        this->errorNotifyHelper(Ccsds::FrameError::TC_INVALID_CRC);
         this->dataReturnOut_out(0, data, context);  // drop the frame
         return;
     }
@@ -109,6 +113,12 @@ void TcDeframer ::dataIn_handler(FwIndexType portNum, Fw::Buffer& data, const Co
 
 void TcDeframer ::dataReturnIn_handler(FwIndexType portNum, Fw::Buffer& fwBuffer, const ComCfg::FrameContext& context) {
     this->dataReturnOut_out(0, fwBuffer, context);
+}
+
+void TcDeframer::errorNotifyHelper(Ccsds::FrameError error) {
+    if (this->isConnected_errorNotify_OutputPort(0)) {
+        this->errorNotify_out(0, error);
+    }
 }
 
 }  // namespace Ccsds

@@ -2,15 +2,21 @@ module Svc {
     @ Dispatches command sequences to available command sequencers
     active component FpySequencer {
 
-        enum BlockState {
+        enum BlockState : U8 {
             BLOCK
             NO_BLOCK
         }
 
-        enum GoalState {
+        enum GoalState : U8 {
             RUNNING
             VALID
             IDLE
+        }
+
+        enum FileReadStage : U8 {
+            HEADER
+            BODY
+            FOOTER
         }
 
         include "FpySequencerCommands.fppi"
@@ -46,6 +52,12 @@ module Svc {
         @ port for requests to run sequences
         # same priority as RUN cmd
         async input port seqRunIn: Svc.CmdSeqIn priority 7 assert
+
+        @ called when a sequence begins running
+        output port seqStartOut: Svc.CmdSeqIn
+
+        @ called when a sequence finishes running, either successfully or not
+        output port seqDoneOut: Fw.CmdResponse
 
         @ Ping out port
         output port pingOut: Svc.Ping

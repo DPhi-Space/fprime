@@ -1,116 +1,161 @@
+@ sleeps for a relative duration from the current time
 struct WaitRelDirective {
-    seconds: U32
-    uSeconds: U32
+    # pops U32, U32 off stack
+    _empty: U8
 }
 
+@ sleeps until an absolute time
 struct WaitAbsDirective {
-    wakeupTime: Fw.Time
+    # pops U32, U32, U8, U16 off stack
+    _empty: U8
 }
 
-# this directive should not be directly serialize/deserialized
-struct SetSerRegDirective {
-    @ the index of the serializable register to set
-    index: U8
-
-    @ the value of the serializable register
-    value: [Fpy.MAX_SERIALIZABLE_REGISTER_SIZE] U8
-
-    @ the length of the value byte array. 
-    # note, the underscore signifies this field is implied and 
-    # is not actually present in the binary form of the directive
-    _valueSize: FwSizeType
-}
-
+@ sets the index of the next directive to execute
 struct GotoDirective {
     @ the statement index to execute next
     statementIndex: U32
 }
 
+@ branches based off of the top byte of the stack
 struct IfDirective {
-    @ the register to branch based off of. register will be interpreted as a C++ boolean
-    conditionalReg: U8
-    @ the statement index to go to if the serializable register is false
+    # pops U8 off stack
+    @ the statement index to go to if the top of the stack is false
     falseGotoStmtIndex: U32
     # this directive will not goto anywhere if the variable is true
 }
 
+@ does nothing
 struct NoOpDirective {
     # fpp requires we have something in a struct
     _empty: U8
 }
 
-struct GetTlmDirective {
-    @ the serializable register to store the tlm value in
-    valueDestSerReg: U8
-    @ the serializable register to store the tlm time in
-    timeDestSerReg: U8
+@ pushes a tlm buf to the stack
+struct PushTlmValDirective {
     @ the tlm channel id to get the time of
     chanId: FwChanIdType
 }
 
-struct GetPrmDirective {
-    @ the serializable register to store the prm value in
-    destSerRegIndex: U8
+@ pushes a tlm buffer to the stack, and then pushes the time 
+@ of the tlm meas to the stack
+struct PushTlmValAndTimeDirective {
+    @ the tlm channel id to get the time and value of
+    chanId: FwChanIdType
+}
+
+@ pushes a prm buf to the stack
+struct PushPrmDirective {
     @ the param id to get the value of
     prmId: FwPrmIdType
 }
 
-struct CmdDirective {
+@ executes a cmd with const args
+struct ConstCmdDirective {
     opCode: FwOpcodeType
     @ the arg buf of the cmd
-    # TODO please don't let me merge this. need to find a better const here
-    argBuf: [Fpy.MAX_SERIALIZABLE_REGISTER_SIZE] U8
+    argBuf: [Fpy.MAX_DIRECTIVE_SIZE] U8
 
     @ the length of the arg buf byte array
     _argBufSize: FwSizeType
 }
 
-@ deser up to 8 bytes out of an serReg
-struct DeserSerRegDirective {
-    @ the serReg to deser from
-    srcSerRegIdx: U8
-    @ the start offset to deser from
-    srcOffset: FwSizeType
-    @ the destination register to deser into
-    destReg: U8
-    @ the number of bytes to deserialize from the serReg, max of 8
-    _deserSize: U8
-}
-
-@ sets a register to a constant value
-struct SetRegDirective {
-    @ the register to store the value in
-    dest: U8
-    @ the value to store in the register
-    value: I64
-}
-
-@ performs a binary comparison operator on the lhs and rhs regs, and stores the result in the third register
-struct BinaryCmpDirective {
-    lhs: U8
-    rhs: U8
-    res: U8
-    
-    @ which binary comparison op to perform
+@ generic stack operation handler
+struct StackOpDirective {
+    @ which stack op to perform
     _op: Fpy.DirectiveId
 }
 
-@ performs a binary complement on the src register, and stores the result in res
-struct NotDirective {
-    src: U8
-    res: U8
+@ ends the sequence
+struct ExitDirective {
+    # pops U8 off the stack
+    _empty: U8
 }
 
-struct ExitDirective {
-    @ whether or not to consider the sequence successful
-    success: bool
+@ pushes some empty bytes to the stack
+struct AllocateDirective {
+    $size: Fpy.StackSizeType
+}
+
+@ pops some bytes off the stack and puts them in lvar array
+struct StoreConstOffsetDirective {
+    lvarOffset: Fpy.StackSizeType
+    $size: Fpy.StackSizeType
+}
+
+@ gets bytes from lvar array and pushes them to stack
+struct LoadDirective {
+    lvarOffset: Fpy.StackSizeType
+    $size: Fpy.StackSizeType
+}
+
+@ pushes a const byte array onto stack
+struct PushValDirective {
+    @ the byte array to push
+    val: [Fpy.MAX_DIRECTIVE_SIZE] U8
+
+    @ the length of the val buf
+    _valSize: FwSizeType
+}
+
+@ pops bytes off the top of the stack and does nothing with them
+struct DiscardDirective {
+    @ how many bytes to pop off the stack
+    $size: Fpy.StackSizeType
+}
+
+@ pop two byte arrays off the top of the stack, call memcmp, push 1 if they were equal, 0 otherwise
+struct MemCmpDirective {
+    @ how big a single byte array is. note, we pop 2x this amount off the stack
+    $size: Fpy.StackSizeType
+}
+
+@ pop an opcode and arg buf off the stack, send to cmd dispatcher and await response
+struct StackCmdDirective {
+    @ how big the argument buffer is
+    argsSize: Fpy.StackSizeType
+}
+
+@ pushes the current Fw.Time struct to the stack
+struct PushTimeDirective {
+    _empty: U8
+}
+
+@ pops a bool off the stack, sets a flag with a specific index to that bool
+struct SetFlagDirective {
+    flagIdx: U8
+}
+
+@ gets a flag and pushes its value as a U8 to the stack
+struct GetFlagDirective {
+    flagIdx: U8
+}
+
+@ grabs a specified region from a struct, pushes it to the stack, removing
+@ the rest of the struct
+struct GetFieldDirective {
+    # pops an Fpy.StackSizeType offset in the parent off the stack
+    @ total size of the struct
+    parentSize: Fpy.StackSizeType
+    @ size of the member to extract
+    memberSize: Fpy.StackSizeType
+}
+
+@ peeks at N bytes from the stack, starting from an offset relative to the top of the stack
+struct PeekDirective {
+    # pops two StackSizeType off the stack
+    _empty: U8
+}
+
+@ stores bytes from the top of the stack into a memory location, determined by the stack
+struct StoreDirective {
+    # pops an Fpy.StackSizeType offset off of stack
+    @ size of data to pop off stack
+    $size: Fpy.StackSizeType
 }
 
 internal port directive_waitRel(directive: WaitRelDirective) priority 6 assert
 
 internal port directive_waitAbs(directive: WaitAbsDirective) priority 6 assert
-
-internal port directive_setSerReg(directive: SetSerRegDirective) priority 6 assert
 
 internal port directive_goto(directive: GotoDirective) priority 6 assert
 
@@ -118,34 +163,40 @@ internal port directive_if(directive: IfDirective) priority 6 assert
 
 internal port directive_noOp(directive: NoOpDirective) priority 6 assert
 
-internal port directive_getTlm(directive: GetTlmDirective) priority 6 assert
+internal port directive_pushTlmVal(directive: PushTlmValDirective) priority 6 assert
 
-internal port directive_getPrm(directive: GetPrmDirective) priority 6 assert
+internal port directive_pushTlmValAndTime(directive: PushTlmValAndTimeDirective) priority 6 assert
 
-internal port directive_cmd(directive: CmdDirective) priority 6 assert
+internal port directive_pushPrm(directive: PushPrmDirective) priority 6 assert
 
-internal port directive_deserSerReg(directive: DeserSerRegDirective) priority 6 assert
+internal port directive_constCmd(directive: ConstCmdDirective) priority 6 assert
 
-internal port directive_setReg(directive: SetRegDirective) priority 6 assert
-
-internal port directive_binaryCmp(directive: BinaryCmpDirective) priority 6 assert
-
-internal port directive_not(directive: NotDirective) priority 6 assert
+internal port directive_stackOp(directive: StackOpDirective) priority 6 assert
 
 internal port directive_exit(directive: ExitDirective) priority 6 assert
 
-enum DirectiveErrorCode {
-    NO_ERROR
-    SER_REG_OUT_OF_BOUNDS
-    STMT_OUT_OF_BOUNDS
-    SER_REG_DESERIALIZE_FAILURE
-    SER_REG_SERIALIZE_FAILURE
-    TLM_GET_NOT_CONNECTED
-    TLM_CHAN_NOT_FOUND
-    PRM_GET_NOT_CONNECTED
-    PRM_NOT_FOUND
-    CMD_SERIALIZE_FAILURE
-    REGISTER_OUT_OF_BOUNDS
-    SER_REG_ACCESS_OUT_OF_BOUNDS
-    DELIBERATE_FAILURE
-}
+internal port directive_allocate(directive: AllocateDirective) priority 6 assert
+
+internal port directive_storeConstOffset(directive: StoreConstOffsetDirective) priority 6 assert
+
+internal port directive_load(directive: LoadDirective) priority 6 assert
+
+internal port directive_pushVal(directive: PushValDirective) priority 6 assert
+
+internal port directive_discard(directive: DiscardDirective) priority 6 assert
+
+internal port directive_memCmp(directive: MemCmpDirective) priority 6 assert
+
+internal port directive_stackCmd(directive: StackCmdDirective) priority 6 assert
+
+internal port directive_pushTime(directive: PushTimeDirective) priority 6 assert
+
+internal port directive_setFlag(directive: SetFlagDirective) priority 6 assert
+
+internal port directive_getFlag(directive: GetFlagDirective) priority 6 assert
+
+internal port directive_getField(directive: GetFieldDirective) priority 6 assert
+
+internal port directive_peek(directive: PeekDirective) priority 6 assert
+
+internal port directive_store(directive: StoreDirective) priority 6 assert

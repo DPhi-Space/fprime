@@ -6,7 +6,6 @@
 #include "Os/Console.hpp"
 #include "Os/Posix/Console.hpp"
 
-
 TEST(Nominal, SwitchStream) {
     Os::Posix::Console::PosixConsole posix_console;
     ASSERT_EQ(reinterpret_cast<Os::Posix::Console::PosixConsoleHandle*>(posix_console.getHandle())->m_file_descriptor,
@@ -20,7 +19,10 @@ TEST(Nominal, SwitchStream) {
 }
 TEST(OffNominal, SwitchStream) {
     Os::Posix::Console::PosixConsole posix_console;
-    ASSERT_DEATH(posix_console.setOutputStream(static_cast<Os::Posix::Console::PosixConsole::Stream>(3)), "Posix/|\\Console.cpp:33");
+    // intentional death test
+    ASSERT_DEATH(posix_console.setOutputStream(static_cast<  // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+                                               Os::Posix::Console::PosixConsole::Stream>(3)),
+                 "Posix/|\\Console.cpp:33");
 }
 
 int main(int argc, char** argv) {

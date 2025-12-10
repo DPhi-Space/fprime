@@ -13,7 +13,7 @@ from fprime_gds.common.utils.event_severity import EventSeverity
 
 
 """
-This enum is includes the values of EventSeverity that can be filtered by the ActiveLogger Component
+This enum is includes the values of EventSeverity that can be filtered by the EventManager Component
 """
 FilterSeverity = Enum(
     "FilterSeverity",
@@ -39,7 +39,7 @@ def test_is_streaming(fprime_test_api):
 def set_event_filter(fprime_test_api, severity, enabled):
     """Send command to set event filter
 
-    This helper will send a command that updates the given severity filter on the ActiveLogger
+    This helper will send a command that updates the given severity filter on the EventManager
     Component in the Ref App.
 
     Args:
@@ -235,7 +235,8 @@ def test_active_logger_filter(fprime_test_api):
         fprime_test_api.send_and_assert_command("CdhCore.cmdDisp.CMD_NO_OP")
         fprime_test_api.send_and_assert_command("CdhCore.cmdDisp.CMD_NO_OP")
 
-        time.sleep(0.5)
+        # Wait >1s for ComAggregator's 1Hz timeout to flush all downlink
+        time.sleep(1.5)
 
         fprime_test_api.assert_event_count(pred, cmd_events)
         fprime_test_api.assert_event_count(pred, actHI_events)
@@ -247,7 +248,8 @@ def test_active_logger_filter(fprime_test_api):
         fprime_test_api.send_command("CdhCore.cmdDisp.CMD_NO_OP")
         fprime_test_api.send_command("CdhCore.cmdDisp.CMD_NO_OP")
 
-        time.sleep(0.5)
+        # Wait >1s for ComAggregator's 1Hz timeout to flush all downlink
+        time.sleep(1.5)
 
         fprime_test_api.assert_event_count(zero, cmd_events)
         fprime_test_api.assert_event_count(pred, actHI_events)
@@ -276,8 +278,8 @@ def test_seqgen(fprime_test_api):
         subprocess.run(
             [
                 "fprime-seqgen",
-                "-d",
-                str(fprime_test_api.pipeline.dictionary_path),
+                "--dictionary",
+                str(fprime_test_api.dictionaries.dictionary_path),
                 str(sequence),
                 "/tmp/ref_test_int.bin",
             ]
@@ -285,5 +287,30 @@ def test_seqgen(fprime_test_api):
         == 0
     ), "Failed to run fprime-seqgen"
     fprime_test_api.send_and_assert_command(
-        "ComCcsds.cmdSeq.CS_RUN", args=["/tmp/ref_test_int.bin", "BLOCK"], max_delay=5
+        "Ref.cmdSeq.CS_RUN", args=["/tmp/ref_test_int.bin", "BLOCK"], max_delay=5
+    )
+
+
+def test_system_resources(fprime_test_api):
+    """Test system resources telemetry meets minimum thresholds"""
+    from fprime_gds.common.testing_fw import predicates
+
+    # Test memory usage > 1KB using predicates
+    pred_greater_than_1kb = predicates.greater_than(1)
+
+    # Wait for telemetry and verify it meets thresholds
+    fprime_test_api.await_telemetry_count(
+        pred_greater_than_1kb, "Ref.systemResources.MEMORY_TOTAL", timeout=3
+    )
+
+    fprime_test_api.await_telemetry_count(
+        pred_greater_than_1kb, "Ref.systemResources.MEMORY_USED", timeout=3
+    )
+
+    fprime_test_api.await_telemetry_count(
+        pred_greater_than_1kb, "Ref.systemResources.NON_VOLATILE_TOTAL", timeout=3
+    )
+
+    fprime_test_api.await_telemetry_count(
+        predicates.greater_than(1.0), "Ref.systemResources.CPU", timeout=3
     )

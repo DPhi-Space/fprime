@@ -72,8 +72,7 @@ Choose the operating system you are using to install F Prime:
     sudo "/Applications/CMake.app/Contents/bin/cmake-gui" --install
     ```
 
-    In order to cross-compile, a Linux box is essential. You may choose to use a virtual 
-    machine or may choose to follow the instructions in [Appendix I](#appendix-i-installing-rancher-desktop-and-the-f-arm-container) to 
+    In order to cross-compile, a Linux box is essential. You may choose to use a virtual machine or may choose to follow the instructions in [Appendix I](#appendix-i-installing-rancher-desktop-and-the-f-arm-container) to 
     install a docker container including the necessary tools. 
 
 === "Ubuntu 20.04 / 22.04 / Generic Linux"
@@ -170,11 +169,11 @@ First, in a terminal upload the software to hardware platform. This is done with
 ```sh
 # For ARM 64-bit hardware
 # In: project root folder
-scp -r build-artifacts/aarch64-linux/<name-of-deployment> <username>@<device-address>:deployment
+scp build-artifacts/aarch64-linux/<name-of-deployment>/bin/<name-of-deployment> <username>@<device-address>:deployment
 
 # For ARM 32-bit hardware
 # In: project root folder
-scp -r build-artifacts/arm-hf-linux/<name-of-deployment> <username>@<device-address>:deployment
+scp build-artifacts/arm-hf-linux/<name-of-deployment>/bin/<name-of-deployment> <username>@<device-address>:deployment
 ```
 > Users must fill in the username and device address above.
 
@@ -188,7 +187,7 @@ fprime-gds -n --dictionary build-artifacts/aarch64-linux/<name-of-deployment>/di
 
 # For ARM 32-bit hardware
 # In: project root folder
-fprime-gds -n --dictionary build-artifacts/aarch64-linux/<name-of-deployment>/dict/<App Dictionary>.json --ip-client --ip-address <device-address>
+fprime-gds -n --dictionary build-artifacts/arm-hf-linux/<name-of-deployment>/dict/<App Dictionary>.json --ip-client --ip-address <device-address>
 ```
 > [!NOTE]
 > This depends on a flight software deployment that uses TcpServer as the communications driver implementation.
@@ -196,7 +195,7 @@ fprime-gds -n --dictionary build-artifacts/aarch64-linux/<name-of-deployment>/di
 In another terminal SSH into the device and run the uploaded software:
 ```sh
 ssh <username>@<device-address>
-deployment/bin/<name-of-deployment> -a 0.0.0.0 -p 50000
+./deployment -a 0.0.0.0 -p 50000
 ```
 > User should fill in the username and device address above and ensure the correct executable is supplied.
 
@@ -212,11 +211,11 @@ the logs scroll by when you initially `fprime-util generate <toolchain>`.
 
 ## Appendix I: Installing Rancher Desktop and the F´ ARM Container
 
-Some users may with to run cross-compilers within docker to minimize the impact of those tools on their systems. Macintosh users will be required to use docker as the ARM/Linux cross-compilers are not available natively for macOS and simple virtualization of a Linux box is no longer practical since the introduction of M1 and M2 hardware.
+Some users may wish to run cross-compilers within docker to minimize the impact of those tools on their systems. Macintosh users will be required to use docker as the ARM/Linux cross-compilers are not available natively for macOS and simple virtualization of a Linux box is no longer practical since the introduction of M1 and M2 hardware.
 
 ### Rancher Desktop Setup
 
-Rancher Desktop is an alternative to Docker Desktop that allows users to run docker containers directly on their desktop  computer. It does not require a license for use like Docker Desktop does and also supports both intel and ARM based  Macintosh computers.
+Rancher Desktop is an alternative to Docker Desktop that allows users to run docker containers directly on their desktop  computer. It does not require a license for use like Docker Desktop does and also supports both Intel and ARM based  Macintosh computers.
 
 > [!NOTE]
 > Non-Macintosh users are advised to run without the below Docker container
@@ -242,7 +241,7 @@ docker pull nasafprime/fprime-arm:latest
 
 In order to run the commands provided by the docker container (i.e. the cross-compilers), users must start the container and attach to a terminal inside. This should be done **after** the user has created a project to work within.
 
-To run this container, users may wish to download [this script](https://github.com/fprime-community/fprime-workshop-led-blinker/blob/main/bin/macos-docker) to a `bin` directory in the root of their project. This will start the docker container with appropriate settings. 
+To run this container, users may wish to download [this script](https://github.com/fprime-community/fprime-workshop-led-blinker/blob/devel/bin/macos-docker) to a `bin` directory in the root of their project. This will start the docker container with appropriate settings. 
 
 Alternatively, the user may run the following command to start the terminal
 ```bash 

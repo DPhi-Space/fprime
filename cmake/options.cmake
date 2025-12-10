@@ -50,6 +50,21 @@ ini_to_cache()
 option(CMAKE_DEBUG_OUTPUT "Generate F prime's debug output while running CMake" OFF)
 
 ####
+# `FPRIME_CMAKE_QUIET`:
+#
+# Turns off the F Prime CMake status messages to reduce output. This include messages: module registration, target
+# registration, autocoder registration, etc. This does not affect error nor warning messages. It also does not quiet
+# build-in CMake messages.
+#
+# **Values:**
+# - ON: quiet the F Prime CMake output
+# - OFF: (default) print F Prime status messages
+#
+# e.g. `-DFPRIME_CMAKE_QUIET=ON`
+####
+option(FPRIME_CMAKE_QUIET "Quiet F prime's CMake output" OFF)
+
+####
 # `FPRIME_USE_STUBBED_DRIVERS`:
 #
 # Tells fprime to use the specific stubbed set of drivers as opposed to full implementation. This applies to drivers in
@@ -89,22 +104,6 @@ endif()
 if (DEFINED FPRIME_USE_BAREMETAL_SCHEDULER AND NOT "${FPRIME_USE_BAREMETAL_SCHEDULER}" STREQUAL "ON" AND NOT "${FPRIME_USE_BAREMETAL_SCHEDULER}" STREQUAL "OFF")
     message(FATAL_ERROR "FPRIME_USE_BAREMETAL_SCHEDULER must be set to ON, OFF, or not supplied at all")
 endif()
-
-####
-# `FPRIME_ENABLE_UTIL_TARGETS`:
-#
-# Enables the targets required to run using `fprime-util`.  These include: check and refresh_cache.
-# This switch defaults to "ON" providing those targets, but may be set to off when running within an
-# IDE where limiting the number of targets is desirable. Note: unit test targets are still only generated when running
-# with -DBUILD_TESTING=ON.
-#
-# **Values:**
-# - ON: (default) generate all targets
-# - OFF: only generate executable, and library targets
-#
-# e.g. `-DFPRIME_ENABLE_UTIL_TARGETS=ON`
-####
-option(FPRIME_ENABLE_UTIL_TARGETS "Enable fprime-util targets" ON)
 
 ####
 # `FPRIME_ENABLE_FRAMEWORK_UTS`:
@@ -149,7 +148,7 @@ option(FPRIME_ENABLE_AUTOCODER_UTS "Enable autocoder UT generation" OFF)
 option(FPRIME_ENABLE_UT_COVERAGE "Calculate unit test coverage" ON)
 
 ####
-# `FPRIME_ENABLE_TEXT_LOGGERS:`
+# `FPRIME_ENABLE_TEXT_LOGGERS`:
 #
 # When FPRIME_ENABLE_TEXT_LOGGERS is set, the ActiveTextLogger and PassiveConsoleTextLogger 
 # svc components are included in the build. When unset, those components are excluded, 
@@ -163,6 +162,20 @@ option(FPRIME_ENABLE_UT_COVERAGE "Calculate unit test coverage" ON)
 # e.g. `-DFPRIME_ENABLE_TEXT_LOGGERS=OFF`
 ####
 option(FPRIME_ENABLE_TEXT_LOGGERS "Enable text loggers in build" ON)
+
+####
+# `FPRIME_ENABLE_JSON_MODEL_GENERATION`:
+#
+# Turns on the generation of JSON models for all modules in the build system. This will run `fpp-to-json` and may
+# require the user to install `java` and the .jar variants of FPP.
+#
+# **Values:**
+# - ON: enable JSON model generation
+# - OFF: (default) disable JSON model generation
+#
+# e.g. `-DFPRIME_ENABLE_JSON_MODEL_GENERATION=ON`
+####
+option(FPRIME_ENABLE_JSON_MODEL_GENERATION "Enable JSON model generation" OFF)
 
 ####
 # `FPRIME_SKIP_TOOLS_VERSION_CHECK`:
@@ -188,6 +201,21 @@ option(FPRIME_SKIP_TOOLS_VERSION_CHECK "Skip the version checking of tools" OFF)
 # For internal use only.  Used to check the framework version has been updated on tags.
 ####
 option(FPRIME_CHECK_FRAMEWORK_VERSION "(Internal) Check framework version when building." OFF)
+
+####
+# `FPRIME_INSTALL_STATIC_LIBRARIES`:
+#
+# Enables the installation of static libraries into the build-artifacts folder. This does not affect generation of the
+# static libraries, only their installation. Shared library installation is always enabled. Default: ON, install static
+# libraries.
+#
+# **Values:**
+# - ON:  (default) install static libraries
+# - OFF: do not install static libraries
+#
+# e.g. `-DFPRIME_INSTALL_STATIC_LIBRARIES=OFF`
+####
+option(FPRIME_INSTALL_STATIC_LIBRARIES "Install static libraries" ON)
 
 ####
 # `ENABLE_SANITIZER_ADDRESS:`

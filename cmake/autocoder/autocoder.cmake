@@ -98,9 +98,7 @@ function(run_ac BUILD_TARGET_NAME AUTOCODER_CMAKE SOURCES GENERATED_FILE_LIST HA
 
     # Break early if there are no sources, no need to autocode nothing
     if (NOT AC_INPUT_SOURCES)
-        if (CMAKE_DEBUG_OUTPUT)
-            message(STATUS "[Autocode/${AUTOCODER_NAME}] No sources detected")
-        endif()
+        fprime_cmake_debug_message("[Autocode/${AUTOCODER_NAME}] No sources detected")
         return()
     endif()
 
@@ -134,22 +132,24 @@ function(run_ac BUILD_TARGET_NAME AUTOCODER_CMAKE SOURCES GENERATED_FILE_LIST HA
         else()
             __ac_process_sources("${BUILD_TARGET_NAME}" "${AC_INPUT_SOURCES}")
         endif()
-        # Read autocoder outputs from properties using the centralized variable lists
-        set(ALL_AUTOCODER_VARIABLES ${FPRIME_AUTOCODER_REQUIRED} ${FPRIME_AUTOCODER_OPTIONAL} AUTOCODER_GENERATED)
-        
-        # Process each autocoder variable and append to target properties with the same name
-        foreach(VARIABLE_NAME IN LISTS ALL_AUTOCODER_VARIABLES)
-            get_property(VARIABLE_VALUES TARGET "${BUILD_TARGET_NAME}" PROPERTY "${AUTOCODER_NAME}_${VARIABLE_NAME}")
-            if (VARIABLE_VALUES)
-                append_list_property("${VARIABLE_VALUES}" TARGET "${BUILD_TARGET_NAME}" PROPERTY "${HASH}_${VARIABLE_NAME}")
-            endif()
-        endforeach()
-        _describe_autocoder_run("${AUTOCODER_NAME}")
     else()
         # Assert runs are identical for the same autocoder
         fprime_cmake_ASSERT("Hash mismatch for autocoder ${AUTOCODER_NAME}: stored '${STORED_HASH}' vs calculated '${SRCS_HASH}'" 
                             "${STORED_HASH}" STREQUAL "${SRCS_HASH}")
     endif()
+
+    # Read autocoder outputs from properties using the centralized variable lists
+    set(ALL_AUTOCODER_VARIABLES ${FPRIME_AUTOCODER_REQUIRED} ${FPRIME_AUTOCODER_OPTIONAL} AUTOCODER_GENERATED)
+
+    # Process each autocoder variable and append to target properties with the same name
+    foreach(VARIABLE_NAME IN LISTS ALL_AUTOCODER_VARIABLES)
+        get_property(VARIABLE_VALUES TARGET "${BUILD_TARGET_NAME}" PROPERTY "${AUTOCODER_NAME}_${VARIABLE_NAME}")
+        if (VARIABLE_VALUES)
+            append_list_property("${VARIABLE_VALUES}" TARGET "${BUILD_TARGET_NAME}" PROPERTY "${HASH}_${VARIABLE_NAME}")
+        endif()
+    endforeach()
+    _describe_autocoder_run("${AUTOCODER_NAME}")
+
 endfunction(run_ac)
 
 ####
@@ -163,12 +163,10 @@ endfunction(run_ac)
 ####
 function(_describe_autocoder_prep AUTOCODER_NAME AC_INPUT_SOURCES)
     # Start by displaying inputs to autocoders
-    if (CMAKE_DEBUG_OUTPUT)
-        message(STATUS "[Autocode/${AUTOCODER_NAME}] Autocoding Input Sources:")
-        foreach(SOURCE IN LISTS AC_INPUT_SOURCES)
-            message(STATUS "[Autocode/${AUTOCODER_NAME}]   ${SOURCE}")
-        endforeach()
-    endif()
+    fprime_cmake_debug_message("[Autocode/${AUTOCODER_NAME}] Autocoding Input Sources:")
+    foreach(SOURCE IN LISTS AC_INPUT_SOURCES)
+        fprime_cmake_debug_message("[Autocode/${AUTOCODER_NAME}]   ${SOURCE}")
+    endforeach()
 endfunction()
 
 ####
@@ -202,9 +200,9 @@ function(_describe_autocoder_run AUTOCODER_NAME)
                 
                 get_property(PROPERTY_VALUES TARGET "${BUILD_TARGET_NAME}" PROPERTY "${AUTOCODER_NAME}_${VARIABLE_NAME}")
                 if (PROPERTY_VALUES)
-                    message(STATUS "[Autocode/${AUTOCODER_NAME}] ${DISPLAY_NAME}:")
+                    fprime_cmake_debug_message("[Autocode/${AUTOCODER_NAME}] ${DISPLAY_NAME}:")
                     foreach(VALUE IN LISTS PROPERTY_VALUES)
-                        message(STATUS "[Autocode/${AUTOCODER_NAME}]   ${VALUE}")
+                        fprime_cmake_debug_message("[Autocode/${AUTOCODER_NAME}]   ${VALUE}")
                     endforeach()
                 endif()
             endif()

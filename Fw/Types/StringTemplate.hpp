@@ -13,7 +13,8 @@
 
 namespace Fw {
 
-template<Fw::StringBase::SizeType size> class StringTemplate final : public StringBase {
+template <Fw::StringBase::SizeType size>
+class StringTemplate final : public StringBase {
   public:
     enum {
         STRING_SIZE = size,
@@ -24,7 +25,7 @@ template<Fw::StringBase::SizeType size> class StringTemplate final : public Stri
 
     StringTemplate(const StringTemplate& src) : StringBase() { *this = src; }
 
-    StringTemplate(const StringBase& src) : StringBase() { *this = src; }
+    StringTemplate(const ConstStringBase& src) : StringBase() { *this = src; }
 
     explicit StringTemplate(const char* src) : StringBase() { *this = src; }
 
@@ -35,7 +36,7 @@ template<Fw::StringBase::SizeType size> class StringTemplate final : public Stri
         return *this;
     }
 
-    StringTemplate& operator=(const StringBase& src) {
+    StringTemplate& operator=(const ConstStringBase& src) {
         (void)StringBase::operator=(src);
         return *this;
     }

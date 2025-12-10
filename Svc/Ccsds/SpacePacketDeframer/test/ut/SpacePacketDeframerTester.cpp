@@ -35,13 +35,14 @@ void SpacePacketDeframerTester ::testDataReturnPassthrough() {
     ComCfg::FrameContext nullContext;
     this->invoke_to_dataReturnIn(0, buffer, nullContext);
     ASSERT_from_dataReturnOut_SIZE(1);  // incoming buffer should be deallocated
+    ASSERT_FROM_PORT_HISTORY_SIZE(1);   // only port call
     ASSERT_EQ(this->fromPortHistory_dataReturnOut->at(0).data.getData(), data);
     ASSERT_EQ(this->fromPortHistory_dataReturnOut->at(0).data.getSize(), sizeof(data));
     ASSERT_EQ(this->fromPortHistory_dataReturnOut->at(0).context, nullContext);
 }
 
 void SpacePacketDeframerTester ::testNominalDeframing() {
-    ComCfg::APID::T apid = static_cast<ComCfg::APID::T>(STest::Random::lowerUpper(0, 0x7FF));  // random 11 bit APID
+    ComCfg::Apid::T apid = static_cast<ComCfg::Apid::T>(STest::Random::lowerUpper(0, 0x7FF));  // random 11 bit APID
     U16 seqCount = static_cast<U8>(STest::Random::lowerUpper(0, 0x3FFF));  // random 14 bit sequence count
     U16 dataLength =
         static_cast<U8>(STest::Random::lowerUpper(1, MAX_TEST_PACKET_DATA_SIZE));  // bytes of data, random length
@@ -58,6 +59,8 @@ void SpacePacketDeframerTester ::testNominalDeframing() {
 
     // Check output packet payload
     ASSERT_from_dataOut_SIZE(1);
+    ASSERT_from_validateApidSeqCount_SIZE(1);
+    ASSERT_FROM_PORT_HISTORY_SIZE(2);  // only two port calls in nominal case
     Fw::Buffer outBuffer = this->fromPortHistory_dataOut->at(0).data;
     ASSERT_EQ(outBuffer.getSize(), static_cast<Fw::Buffer::SizeType>(dataLength));
     for (U32 i = 0; i < dataLength; ++i) {
@@ -65,14 +68,14 @@ void SpacePacketDeframerTester ::testNominalDeframing() {
     }
     // Check output context (header info)
     ComCfg::FrameContext context = this->fromPortHistory_dataOut->at(0).context;
-    ASSERT_EQ(context.getapid(), apid);
-    ASSERT_EQ(context.getsequenceCount(), seqCount);
+    ASSERT_EQ(context.get_apid(), apid);
+    ASSERT_EQ(context.get_sequenceCount(), seqCount);
 
     ASSERT_EVENTS_SIZE(0);  // No events should be generated in the nominal case
 }
 
 void SpacePacketDeframerTester ::testDeframingIncorrectLength() {
-    ComCfg::APID::T apid = static_cast<ComCfg::APID::T>(STest::Random::lowerUpper(0, 0x7FF));  // random 11 bit APID
+    ComCfg::Apid::T apid = static_cast<ComCfg::Apid::T>(STest::Random::lowerUpper(0, 0x7FF));  // random 11 bit APID
     U16 seqCount = static_cast<U8>(STest::Random::lowerUpper(0, 0x3FFF));  // random 14 bit sequence count
     U16 realDataLength =
         static_cast<U8>(STest::Random::lowerUpper(1, MAX_TEST_PACKET_DATA_SIZE));  // bytes of data, random length
@@ -89,6 +92,8 @@ void SpacePacketDeframerTester ::testDeframingIncorrectLength() {
     ASSERT_from_dataOut_SIZE(0);
     // Data returned (frame dropped)
     ASSERT_from_dataReturnOut_SIZE(1);
+    ASSERT_FROM_PORT_HISTORY_SIZE(2);  // two port calls, one for dataReturn and one for errorNotify
+    ASSERT_from_errorNotify(0, Svc::Ccsds::FrameError::SP_INVALID_LENGTH);
     Fw::Buffer returnedBuffer = this->fromPortHistory_dataReturnOut->at(0).data;
     ASSERT_EQ(returnedBuffer.getSize(), buffer.getSize());
     ASSERT_EQ(this->fromPortHistory_dataReturnOut->at(0).context, nullContext);  // Data should be the same as input
@@ -110,13 +115,13 @@ Fw::Buffer SpacePacketDeframerTester ::assemblePacket(U16 apid,
                                                       U8* packetData,
                                                       U16 packetDataLen) {
     SpacePacketHeader header;
-    header.setpacketIdentification(apid);
-    header.setpacketSequenceControl(seqCount);  // Sequence Flags = 0b11 (unsegmented) & unused Seq count
-    header.setpacketDataLength(lengthToken);
+    header.set_packetIdentification(apid);
+    header.set_packetSequenceControl(seqCount);  // Sequence Flags = 0b11 (unsegmented) & unused Seq count
+    header.set_packetDataLength(lengthToken);
 
     Fw::ExternalSerializeBuffer serializer(static_cast<U8*>(this->m_packetBuffer), sizeof(this->m_packetBuffer));
-    serializer.serialize(header);
-    serializer.serialize(packetData, packetDataLen, Fw::Serialization::OMIT_LENGTH);
+    serializer.serializeFrom(header);
+    serializer.serializeFrom(packetData, packetDataLen, Fw::Serialization::OMIT_LENGTH);
     return Fw::Buffer(this->m_packetBuffer,
                       static_cast<Fw::Buffer::SizeType>(packetDataLen + SpacePacketHeader::SERIALIZED_SIZE));
 }

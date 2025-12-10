@@ -9,15 +9,15 @@
 #define COMPACKET_HPP_
 
 #include <Fw/Types/Serializable.hpp>
-#include "config/APIDEnumAc.hpp"
+#include "config/ApidEnumAc.hpp"
 
 // Packet format:
-// |32-bit packet type|packet type-specific data|
+// | packet type (width = FwPacketDescriptorType) | packet type-specific data |
 
 namespace Fw {
 
 // This type is defined in config/ComCfg.fpp
-using ComPacketType = ComCfg::APID::T;
+using ComPacketType = ComCfg::Apid::T;
 
 class ComPacket : public Serializable {
   public:
@@ -27,9 +27,9 @@ class ComPacket : public Serializable {
   protected:
     ComPacketType m_type;
     SerializeStatus serializeBase(
-        SerializeBufferBase& buffer) const;  // called by derived classes to serialize common fields
+        SerialBufferBase& buffer) const;  // called by derived classes to serialize common fields
     SerializeStatus deserializeBase(
-        SerializeBufferBase& buffer);  // called by derived classes to deserialize common fields
+        SerialBufferBase& buffer);  // called by derived classes to deserialize common fields
 };
 
 } /* namespace Fw */

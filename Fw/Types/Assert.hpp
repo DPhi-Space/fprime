@@ -47,8 +47,7 @@
 
 // Helper macro asserting that a value fits into a type without overflow. Helpful for checking before static casts
 #define FW_ASSERT_NO_OVERFLOW(value, T) \
-    FW_ASSERT((value) <= std::numeric_limits<T>::max(), \
-              static_cast<FwAssertArgType>(value))
+    FW_ASSERT((value) <= std::numeric_limits<T>::max(), static_cast<FwAssertArgType>(value))
 
 // F' Assertion functions can technically return even though the intention is for the assertion to terminate the
 // program. This breaks static analysis depending on assertions, since the analyzer has to assume the assertion will
@@ -64,50 +63,66 @@
 #endif
 #endif
 
+// Define NOINLINE as __attribute__((noinline)) if that attribute is available.
+// Marking assertion functions as NOINLINE can reduce code size without sacrificing performance
+// in the common case that the function is not called.
+#ifndef NOINLINE
+#ifndef __has_attribute
+#define __has_attribute(x) 0
+#endif
+#if __has_attribute(noinline)
+#define NOINLINE __attribute__((noinline))
+#else
+#define NOINLINE
+#endif
+#endif
+
 namespace Fw {
 //! Assert with no arguments
-I8 SwAssert(FILE_NAME_ARG file, FwSizeType lineNo) CLANG_ANALYZER_NORETURN;
+I8 SwAssert(FILE_NAME_ARG file, FwSizeType lineNo) NOINLINE CLANG_ANALYZER_NORETURN;
 
 //! Assert with one argument
-I8 SwAssert(FILE_NAME_ARG file, FwAssertArgType arg1, FwSizeType lineNo) CLANG_ANALYZER_NORETURN;
+I8 SwAssert(FILE_NAME_ARG file, FwAssertArgType arg1, FwSizeType lineNo) NOINLINE CLANG_ANALYZER_NORETURN;
 
 //! Assert with two arguments
-I8 SwAssert(FILE_NAME_ARG file, FwAssertArgType arg1, FwAssertArgType arg2, FwSizeType lineNo)
-    CLANG_ANALYZER_NORETURN;
+I8 SwAssert(FILE_NAME_ARG file,
+            FwAssertArgType arg1,
+            FwAssertArgType arg2,
+            FwSizeType lineNo) NOINLINE CLANG_ANALYZER_NORETURN;
 
 //! Assert with three arguments
 I8 SwAssert(FILE_NAME_ARG file,
-                         FwAssertArgType arg1,
-                         FwAssertArgType arg2,
-                         FwAssertArgType arg3,
-                         FwSizeType lineNo) CLANG_ANALYZER_NORETURN;
+            FwAssertArgType arg1,
+            FwAssertArgType arg2,
+            FwAssertArgType arg3,
+            FwSizeType lineNo) NOINLINE CLANG_ANALYZER_NORETURN;
 
 //! Assert with four arguments
 I8 SwAssert(FILE_NAME_ARG file,
-                         FwAssertArgType arg1,
-                         FwAssertArgType arg2,
-                         FwAssertArgType arg3,
-                         FwAssertArgType arg4,
-                         FwSizeType lineNo) CLANG_ANALYZER_NORETURN;
+            FwAssertArgType arg1,
+            FwAssertArgType arg2,
+            FwAssertArgType arg3,
+            FwAssertArgType arg4,
+            FwSizeType lineNo) NOINLINE CLANG_ANALYZER_NORETURN;
 
 //! Assert with five arguments
 I8 SwAssert(FILE_NAME_ARG file,
-                         FwAssertArgType arg1,
-                         FwAssertArgType arg2,
-                         FwAssertArgType arg3,
-                         FwAssertArgType arg4,
-                         FwAssertArgType arg5,
-                         FwSizeType lineNo) CLANG_ANALYZER_NORETURN;
+            FwAssertArgType arg1,
+            FwAssertArgType arg2,
+            FwAssertArgType arg3,
+            FwAssertArgType arg4,
+            FwAssertArgType arg5,
+            FwSizeType lineNo) NOINLINE CLANG_ANALYZER_NORETURN;
 
 //! Assert with six arguments
 I8 SwAssert(FILE_NAME_ARG file,
-                         FwAssertArgType arg1,
-                         FwAssertArgType arg2,
-                         FwAssertArgType arg3,
-                         FwAssertArgType arg4,
-                         FwAssertArgType arg5,
-                         FwAssertArgType arg6,
-                         FwSizeType lineNo) CLANG_ANALYZER_NORETURN;
+            FwAssertArgType arg1,
+            FwAssertArgType arg2,
+            FwAssertArgType arg3,
+            FwAssertArgType arg4,
+            FwAssertArgType arg5,
+            FwAssertArgType arg6,
+            FwSizeType lineNo) NOINLINE CLANG_ANALYZER_NORETURN;
 }  // namespace Fw
 
 // Base class for declaring an assert hook
@@ -118,8 +133,8 @@ namespace Fw {
 // Base class for declaring an assert hook
 class AssertHook {
   public:
-    AssertHook() : previousHook(nullptr){};  //!< constructor
-    virtual ~AssertHook(){};                 //!< destructor
+    AssertHook() : previousHook(nullptr) {};  //!< constructor
+    virtual ~AssertHook() {};                 //!< destructor
     // override this function to intercept asserts
     virtual void reportAssert(FILE_NAME_ARG file,
                               FwSizeType lineNo,

@@ -66,6 +66,9 @@ class FrameAccumulatorTester : public FrameAccumulatorGTestBase {
     //! Test returning ownership of a buffer
     void testBufferReturnDeallocation();
 
+    //! Test handling of errors from the FrameDetector (too large size_out)
+    void testDetectionErrorHandling();
+
   private:
     // ----------------------------------------------------------------------
     // Helper functions
@@ -122,7 +125,6 @@ class FrameAccumulatorTester : public FrameAccumulatorGTestBase {
     Fw::Buffer m_buffer;  // buffer to be returned by mocked bufferAllocate call
     U8 m_buffer_slot[2048];
 };
-
 
 }  // namespace Svc
 

@@ -43,28 +43,31 @@ void SpacePacketDeframer ::dataIn_handler(FwIndexType portNum, Fw::Buffer& data,
     FW_ASSERT(data.getSize() > SpacePacketHeader::SERIALIZED_SIZE, static_cast<FwAssertArgType>(data.getSize()));
 
     SpacePacketHeader header;
-    Fw::SerializeStatus status = data.getDeserializer().deserialize(header);
+    Fw::SerializeStatus status = data.getDeserializer().deserializeTo(header);
     FW_ASSERT(status == Fw::FW_SERIALIZE_OK, status);
 
     // Space Packet protocol defines the Data Length as number of bytes minus 1
     // so we need to add 1 to the length to get the actual data size
-    U16 pkt_length = static_cast<U16>(header.getpacketDataLength() + 1);
+    U16 pkt_length = static_cast<U16>(header.get_packetDataLength() + 1);
     if (pkt_length > data.getSize() - SpacePacketHeader::SERIALIZED_SIZE) {
         FwSizeType maxDataAvailable = data.getSize() - SpacePacketHeader::SERIALIZED_SIZE;
         this->log_WARNING_HI_InvalidLength(pkt_length, maxDataAvailable);
+        if (this->isConnected_errorNotify_OutputPort(0)) {
+            this->errorNotify_out(0, Svc::Ccsds::FrameError::SP_INVALID_LENGTH);
+        }
         this->dataReturnOut_out(0, data, context);  // Drop the packet
         return;
     }
 
-    U16 apidValue = header.getpacketIdentification() & SpacePacketSubfields::ApidMask;
-    ComCfg::APID::T apid = static_cast<ComCfg::APID::T>(apidValue);
+    U16 apidValue = header.get_packetIdentification() & SpacePacketSubfields::ApidMask;
+    ComCfg::Apid::T apid = static_cast<ComCfg::Apid::T>(apidValue);
     ComCfg::FrameContext contextCopy = context;
-    contextCopy.setapid(apid);
+    contextCopy.set_apid(apid);
 
     // Validate with the ApidManager that the sequence count is correct
-    U16 receivedSequenceCount = header.getpacketSequenceControl() & SpacePacketSubfields::SeqCountMask;
+    U16 receivedSequenceCount = header.get_packetSequenceControl() & SpacePacketSubfields::SeqCountMask;
     (void)this->validateApidSeqCount_out(0, apid, receivedSequenceCount);
-    contextCopy.setsequenceCount(receivedSequenceCount);
+    contextCopy.set_sequenceCount(receivedSequenceCount);
 
     // Set data buffer to be of the encapsulated data: HEADER (6 bytes) | PACKET DATA
     data.setData(data.getData() + SpacePacketHeader::SERIALIZED_SIZE);

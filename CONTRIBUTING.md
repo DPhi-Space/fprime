@@ -16,19 +16,10 @@ Specific Ways to Contribute:
 - [Ask a Question or Suggest Improvements](https://github.com/nasa/fprime/discussions/new)
 - [Report a Bug or Mistake](https://github.com/nasa/fprime/issues/new/choose)
 - [Review Contributions](https://github.com/nasa/fprime/pulls)
-- Submit a Pull Request
+- Submit a Pull Request see: [Code Contribution Process](#cod-ontribution-process)
 - Contribute to Ongoing Discussions and Reviews
 
 Feel free to contribute any way that suits your skills and enjoy.
-
-
-> **Note:** [F´ Autocoder Python](https://github.com/nasa/fprime/tree/master/Autocoders) is being actively replaced
-> by [FPP](https://github.com/fprime-community/fpp). Thus we will no longer accept changes to this code except for
-> security and critical bug fixes done in the most minimal fashion.
->
-> We do love Python fixes, please consider contributing to
-> [fprime-tools](https://github.com/fprime-community/fprime-tools) or
-> [fprime-gds](https://github.com/fprime-community/fprime-gds)
 
 ## Where to Start
 
@@ -44,28 +35,13 @@ with an [easy first issue](https://github.com/nasa/fprime/issues?q=is%3Aissue+is
 When starting to modify F´ directly, ask questions, seek help, and be patient. Remember to review the project structure,
 development process, and helpful tips sections below.
 
-## Project Structure
+## Code Contribution Process
 
-The F´ project is designed as a base software [framework](https://github.com/nasa/fprime) with additional
-[packages](https://github.com/fprime-community) designed to extend the framework. This means that occasionally we may
-move contributions in or out of these packages.
+All code contributions to F´ begin with an issue. Whether you're fixing a bug, adding a feature, or improving documentation, please start by opening an issue describing your proposal. The Change Control Board (CCB) reviews and approves issues before work begins to ensure alignment with project goals and standards. Once approved, you can proceed with implementation and submit a pull request (PR).
 
-Key packages include:
+If a PR is opened for work that does not correspond to an approved issue, the PR will be routed through the CCB process first—reviewed on a best-effort basis—and may be delayed or declined depending on CCB decisions.You can read more about how this process works in the [F´ Governance document](https://github.com/nasa/fprime/blob/devel/GOVERNANCE.md).
 
-- [fpp](https://github.com/fprime-community/fpp): fpp development repository
-- [fprime-tools](https://github.com/fprime-community/fprime-tools): `fprime-util` development repository
-- [fprime-gds](https://github.com/fprime-community/fprime-gds): `fprime-gds` development repository
-
-
-### F´ Repository Structure
-
-Contributors to the [fprime](https://github.com/nasa/fprime) repository should understand the following key folders:
-
-- [docs/UsersGuide](https://github.com/nasa/fprime/tree/devel/docs/UsersGuide): add new documentation in this or a subfolder
-- [Fw](https://github.com/nasa/fprime/tree/devel/Fw): changes here will be reviewed carefully because this code is critical across F
-- [Ref](https://github.com/nasa/fprime/tree/devel/Ref): update and maintain the Reference application here
-
-## Development Process
+### Development Process
 
 F´ follows a standard git flow development model. Developers should start with a
 [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) of one of the F´ repositories and then develop
@@ -83,6 +59,11 @@ git checkout -b <desired branch name>
 ```
 
 Once a pull request has been submitted the following process will begin.
+
+**Best practice: commit messages and PRs**
+
+We recommend users to use an [imperative-style phrasing](https://cbea.ms/git-commit/#imperative) when writing commit messages. F´ uses the "Squash & Merge" strategy, meaning that all commits made on a PR branch will be combined into one squashed commit when merged into F´. The commit message for the squashed commit defaults to use the title of the Pull Request, so we do ask contributors to please follow the imperative-style phrasing for the title of their Pull Requests.  
+When opening a Pull Request, please fill in the given template, and link to any relevant issue on the repository.
 
 ### Submission Review
 
@@ -121,12 +102,30 @@ The checks are configured to run on the `devel` branch of each external reposito
 
 Maintainers will gladly help you in this process.
 
-## Final Approval and Submission
+### Final Approval and Submission
 
 Once all corrections have been made, automated checks are passing, and a maintainer has given final approval, it is time
 to contribute the submission. A maintainer will handle this final step and once complete changes should appear in the
 `devel` branch. You can help this process by submitting any deferred or future work items as issues using the links
 above.
+
+## Project Structure
+
+The F´ project is designed as a base software [framework](https://github.com/nasa/fprime) with additional
+[packages](https://github.com/fprime-community) designed to extend the framework. This means that occasionally we may
+move contributions in or out of these packages.
+
+Key packages include:
+
+- [fpp](https://github.com/fprime-community/fpp): fpp development repository
+- [fprime-tools](https://github.com/fprime-community/fprime-tools): `fprime-util` development repository
+- [fprime-gds](https://github.com/fprime-community/fprime-gds): `fprime-gds` development repository
+
+
+### F´ Repository Structure
+
+Contributors to the [fprime](https://github.com/nasa/fprime) repository should refer to the following guide to understand the repository structure: [A Tour of the Source Tree](docs/user-manual/overview/source-tree.md)
+
 
 ## Helpful Tips
 
@@ -141,42 +140,54 @@ changes across many files.
 Keep in mind that editors that fix whitespace automatically can cause many small changes. Even with advanced GitHub
 tools this can increase the effort required to review a submission. Be careful with the changes you are submitting.
 
-## Run Tests
+### Run Tests
 
 The automatic checking system will run all our unit tests and integration tests across several systems. However, this
 process will take time. Try to run the unit tests locally during development before submitting a PR and use the
 automatic checks as a safety net.
 
+Building and running the tests has the same Python virtual environment requirements as developing an F´ project, which
+is usually set up by fprime-bootstrap. Steps to set up the environment outside a project are included below.
+
 The tests can be run using the following commands:
 
 ```bash
 # Go into the fprime directory
-cp MY_FPRIME_DIRECTORY
+cd MY_FPRIME_DIRECTORY
 
-# Run CI tests on fprime
-./ci/tests/Framework.bash
+# Set up and activate a Python virtual environment, if none already:
+python3 -m venv .venv
+source .venv/bin/activate
 
-# Run CI tests on the reference application
-./ci/tests/Ref.bash
+# Make sure Python packages from ./requirements.txt are installed and up-to-date:
+pip install -Ur requirements.txt
+
+# Initialize googletest submodule:
+git submodule update --init --recursive
 
 # Run the static analyzer with the basic configuration
 # Purge unit test directory
 fprime-util purge
-# Generate the build files for clang-tidy. Make sure clang-tidy is installed.
-fprime-util generate --ut -DCMAKE_CXX_CLANG_TIDY=clang-tidy-12
+# Generate the build files. Using clang-tidy is optional, but recommended to match the CI checks.
+# On macOS, expect a CMake Warning 'Leak sanitizer is not supported on macOS in cmake/sanitizers.cmake'
+fprime-util generate --ut -DCMAKE_CXX_CLANG_TIDY=clang-tidy
 # Build fprime with the static analyzer
-fprime-util build --all --ut -j16
+fprime-util build --all --ut
 
-# Run the static analyzer with additional flight code checks
-# Purge release directory
-fprime-util purge
-# Generate the build files for clang-tidy. Make sure clang-tidy is installed.
-fprime-util generate -DCMAKE_CXX_CLANG_TIDY="clang-tidy-12;--config-file=$PWD/release.clang-tidy"
-# Build fprime with the static analyzer
-fprime-util build --all -j16
+# Run Unit Tests
+fprime-util check --all
 ```
 
-## Development with modified FPP version
+### Code formatting
+
+The F´ repository enforces formatting with `clang-format`. Most IDEs offer tools to format on demand or auto-format on "Save". To run formatting yourself, `fprime-util` provides a quick way to format all files that have been modified since you branched off of `devel`:
+
+```bash
+git diff --name-only devel...HEAD | fprime-util format --stdin
+```
+
+
+### Development with modified FPP version
 
 In case FPP needs to be locally changed, first uninstall all `fprime-fpp-*` `pip` packages, and install FPP
 using the procedure mentioned in the [FPP readme](https://github.com/nasa/fpp/blob/main/compiler/README.adoc).
@@ -190,5 +201,5 @@ cp MY_FPRIME_DIRECTORY
 # Generate the build files without checking the FPP version
 fprime-util generate -DFPRIME_SKIP_TOOLS_VERSION_CHECK=1
 # Build the project
-fprime-util build -j4
+fprime-util build
 ```

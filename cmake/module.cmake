@@ -12,6 +12,7 @@ include(target/target)
 include(implementation)
 include(target/ut) # For FPRIME__INTERNAL_UT_TARGET variable
 include(utilities)
+include(fprime-util)
 set(FPRIME__INTERNAL_BASE_CONTROL_SETS "HEADERS" "SOURCES" "DEPENDS" "EXCLUDE_FROM_ALL" "AUTOCODER_INPUTS" "REQUIRES_IMPLEMENTATIONS")
 
 set(FPRIME__INTERNAL_EMPTY_CPP "${FPRIME_FRAMEWORK_PATH}/cmake/empty.cpp")
@@ -218,7 +219,7 @@ endfunction()
 ####
 function(fprime__internal_add_build_target_helper TARGET_NAME TYPE SOURCES AUTOCODER_INPUTS HEADERS DEPENDENCIES REQUIRES_IMPLEMENTATIONS CHOOSES_IMPLEMENTATIONS FPRIME_CMAKE_ADD_OPTIONS)
     # Historical status message for posterity...and to prevent panic amongst users
-    message(STATUS "Adding ${TYPE}: ${TARGET_NAME}")
+    fprime_cmake_status("Adding ${TYPE}: ${TARGET_NAME}")
     # Remap F Prime target type to CMake targe type
     if (INTERFACE IN_LIST FPRIME_CMAKE_ADD_OPTIONS AND SOURCES)
         fprime_cmake_fatal_error("INTERFACE libraries cannot have SOURCES")
@@ -235,6 +236,12 @@ function(fprime__internal_add_build_target_helper TARGET_NAME TYPE SOURCES AUTOC
             FPRIME_UT_AUTO_HELPERS TRUE
         )
     endif()
+    if (DEFINED INTERNAL_TESTED_MODULE)
+        set_target_properties("${TARGET_NAME}" PROPERTIES 
+            FPRIME_TESTED_MODULE "${INTERNAL_TESTED_MODULE}"
+        )
+    endif()
+    fprime_util_metadata_add_build_target("${TARGET_NAME}")
     # TODO: this is needed because sub-builds still attempt register targets, but without the build target to add back in the
     #       autocoding output. Thus empty must be substituted. Would it be possible to force the library to be an INTERFACE
     #       instead?  Or only add empty on sub-builds?
@@ -262,7 +269,7 @@ function(fprime__internal_add_build_target_helper TARGET_NAME TYPE SOURCES AUTOC
 
     # Add required implementations to the target
     if (REQUIRES_IMPLEMENTATIONS)
-        message(STATUS "Adding required implementations of ${REQUIRES_IMPLEMENTATIONS}")
+        fprime_cmake_status("Adding required implementations of ${REQUIRES_IMPLEMENTATIONS}")
         append_list_property("${REQUIRES_IMPLEMENTATIONS}" GLOBAL PROPERTY FPRIME_REQUIRED_IMPLEMENTATIONS)
     endif()      
 endfunction()

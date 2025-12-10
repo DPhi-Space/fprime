@@ -1,6 +1,6 @@
 module DataProductsConfig {
     #Base ID for the DataProducts Subtopology, all components are offsets from this base ID
-    constant BASE_ID = 0x9000
+    constant BASE_ID = 0x04000000
     
     module QueueSizes {
         constant dpCat    = 10
@@ -18,10 +18,10 @@ module DataProductsConfig {
     }
 
     module Priorities {
-        constant dpCat    = 101
-        constant dpMgr  = 100
-        constant dpWriter   = 99
-        constant dpBufferManager  = 98
+        constant dpCat    = 24
+        constant dpMgr  = 23
+        constant dpWriter   = 22
+        constant dpBufferManager  = 21
     }
 
     # Buffer management constants

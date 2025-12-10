@@ -1,27 +1,25 @@
 module ComCcsdsConfig {
     #Base ID for the ComCcsds Subtopology, all components are offsets from this base ID
-    constant BASE_ID = 0x8000
+    constant BASE_ID = 0x02000000
     
     module QueueSizes {
-        constant comQueue    = 10
-        constant cmdSeq      = 10
+        constant comQueue    = 50
+        constant aggregator  = 10
     }
     
     module StackSizes {
         constant comQueue   = 64 * 1024
-        constant cmdSeq    = 64 * 1024
-        constant comDriver = 100
+        constant aggregator = 64 * 1024
     }
 
     module Priorities {
-        constant comQueue   = 101
-        constant cmdSeq     = 100
-        constant comDriver  = 100
+        constant aggregator = 30
+        constant comQueue   = 29
     }
 
     # Queue configuration constants
     module QueueDepths {
-        constant events      = 100             
+        constant events      = 200             
         constant tlm         = 500            
         constant file        = 100            
     }
@@ -34,7 +32,6 @@ module ComCcsdsConfig {
 
     # Buffer management constants
     module BuffMgr {
-        constant cmdSeqBuffSize        = 5 * 1024 
         constant frameAccumulatorSize  = 2048     
         constant commsBuffSize         = 2048      
         constant commsFileBuffSize     = 3000      

@@ -13,120 +13,117 @@
 #ifndef TESTER_HPP
 #define TESTER_HPP
 
-#include "UdpGTestBase.hpp"
-#include "Drv/Udp/UdpComponentImpl.hpp"
 #include "Drv/Ip/TcpServerSocket.hpp"
+#include "Drv/Udp/UdpComponentImpl.hpp"
+#include "UdpGTestBase.hpp"
 
 #define SEND_DATA_BUFFER_SIZE 1024
 
 namespace Drv {
 
-  class UdpTester :
-    public UdpGTestBase
-  {
-      // Maximum size of histories storing events, telemetry, and port outputs
-      static const U32 MAX_HISTORY_SIZE = 1000;
-      // Instance ID supplied to the component instance under test
-      static const FwEnumStoreType TEST_INSTANCE_ID = 0;
-      // Queue depth supplied to component instance under test
-      static const FwSizeType TEST_INSTANCE_QUEUE_DEPTH = 100;
+class UdpTester : public UdpGTestBase {
+    // Maximum size of histories storing events, telemetry, and port outputs
+    static const FwSizeType MAX_HISTORY_SIZE = 1000;
+    // Instance ID supplied to the component instance under test
+    static const FwEnumStoreType TEST_INSTANCE_ID = 0;
+    // Queue depth supplied to component instance under test
+    static const FwSizeType TEST_INSTANCE_QUEUE_DEPTH = 100;
 
-      // ----------------------------------------------------------------------
-      // Construction and destruction
-      // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // Construction and destruction
+    // ----------------------------------------------------------------------
 
-    public:
+  public:
+    //! Construct object UdpTester
+    //!
+    UdpTester();
 
-      //! Construct object UdpTester
-      //!
-      UdpTester();
+    void initSetup();
 
-      void initSetup();
+    //! Destroy object UdpTester
+    //!
+    ~UdpTester();
 
-      //! Destroy object UdpTester
-      //!
-      ~UdpTester();
+  public:
+    // ----------------------------------------------------------------------
+    // Tests
+    // ----------------------------------------------------------------------
 
-    public:
+    //! Test basic messaging
+    //!
+    void test_basic_messaging();
 
-      // ----------------------------------------------------------------------
-      // Tests
-      // ----------------------------------------------------------------------
+    //! Test basic reconnection behavior
+    //!
+    void test_multiple_messaging();
 
-      //! Test basic messaging
-      //!
-      void test_basic_messaging();
+    //! Test basic messaging in unidirectional mode
+    //!
+    void test_basic_unidirectional_messaging();
 
-      //! Test basic reconnection behavior
-      //!
-      void test_multiple_messaging();
+    //! Test basic reconnection behavior in unidirectional mode
+    //!
+    void test_multiple_unidirectional_messaging();
 
-      //! Test receive via thread
-      //!
-      void test_receive_thread();
+    //! Test receive via thread
+    //!
+    void test_receive_thread();
 
-      //! Test advanced (duration) reconnect
-      //!
-      void test_advanced_reconnect();
+    //! Test advanced (duration) reconnect
+    //!
+    void test_advanced_reconnect();
 
-      //! Test buffer deallocation
-      void test_buffer_deallocation();
+    //! Test buffer deallocation
+    void test_buffer_deallocation();
 
-      // Helpers
-      void test_with_loop(U32 iterations, bool recv_thread=false);
+    // Helpers
+    void test_with_loop(U32 iterations, bool recv_thread = false, bool send_only = false);
 
-      bool wait_on_change(Drv::IpSocket &socket, bool open, U32 iterations);
+    bool wait_on_change(Drv::IpSocket& socket, bool open, U32 iterations);
 
-    private:
+  private:
+    // ----------------------------------------------------------------------
+    // Handler overrides for typed from ports
+    // ----------------------------------------------------------------------
 
-      // ----------------------------------------------------------------------
-      // Handler overrides for typed from ports
-      // ----------------------------------------------------------------------
+    //! Handler for from_recv
+    //!
+    void from_recv_handler(const FwIndexType portNum, /*!< The port number*/
+                           Fw::Buffer& recvBuffer,
+                           const ByteStreamStatus& recvStatus) override;
 
-      //! Handler for from_recv
-      //!
-      void from_recv_handler(
-          const FwIndexType portNum, /*!< The port number*/
-          Fw::Buffer &recvBuffer,
-          const ByteStreamStatus &recvStatus
-      ) override;
+    //! Handler for from_allocate
+    //!
+    Fw::Buffer from_allocate_handler(const FwIndexType portNum, /*!< The port number*/
+                                     FwSizeType size) override;
 
-      //! Handler for from_allocate
-      //!
-      Fw::Buffer from_allocate_handler(
-          const FwIndexType portNum, /*!< The port number*/
-          FwSizeType size
-      ) override;
+  private:
+    // ----------------------------------------------------------------------
+    // Helper methods
+    // ----------------------------------------------------------------------
 
-    private:
+    //! Connect ports
+    //!
+    void connectPorts();
 
-      // ----------------------------------------------------------------------
-      // Helper methods
-      // ----------------------------------------------------------------------
+    //! Initialize components
+    //!
+    void initComponents();
 
-      //! Connect ports
-      //!
-      void connectPorts();
+  private:
+    // ----------------------------------------------------------------------
+    // Variables
+    // ----------------------------------------------------------------------
 
-      //! Initialize components
-      //!
-      void initComponents();
+    //! The component under test
+    //!
+    UdpComponentImpl component;
+    Fw::Buffer m_data_buffer;
+    Fw::Buffer m_data_buffer2;
+    U8 m_data_storage[SEND_DATA_BUFFER_SIZE];
+    std::atomic<bool> m_spinner;
+};
 
-    private:
-
-      // ----------------------------------------------------------------------
-      // Variables
-      // ----------------------------------------------------------------------
-
-      //! The component under test
-      //!
-      UdpComponentImpl component;
-      Fw::Buffer m_data_buffer;
-      Fw::Buffer m_data_buffer2;
-      U8 m_data_storage[SEND_DATA_BUFFER_SIZE];
-      std::atomic<bool> m_spinner;
-  };
-
-} // end namespace Drv
+}  // end namespace Drv
 
 #endif

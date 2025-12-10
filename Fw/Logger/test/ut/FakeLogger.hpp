@@ -8,8 +8,8 @@
  */
 
 #include <Fw/FPrimeBasicTypes.hpp>
-#include <Fw/Types/String.hpp>
 #include <Fw/Logger/Logger.hpp>
+#include <Fw/Types/String.hpp>
 #include <string>
 
 #ifndef FPRIME_FAKELOGGER_HPP
@@ -29,7 +29,7 @@ class FakeLogger : public Fw::Logger {
      * Fake implementation of the logger.
      * @param message: formatted message to log
      */
-    void writeMessage(const Fw::StringBase& message);
+    void writeMessage(const Fw::ConstStringBase& message);
 
     /**
      * Check last message.
@@ -46,5 +46,5 @@ class FakeLogger : public Fw::Logger {
     //!< Logger to use within the system
     static Fw::Logger* s_current;
 };
-}       // namespace MockLogging
+}  // namespace MockLogging
 #endif  // FPRIME_FAKELOGGER_HPP

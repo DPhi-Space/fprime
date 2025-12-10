@@ -18,7 +18,9 @@ DpManagerTester ::DpManagerTester()
     this->connectPorts();
 }
 
-DpManagerTester ::~DpManagerTester() {}
+DpManagerTester ::~DpManagerTester() {
+    this->component.deinit();
+}
 
 // ----------------------------------------------------------------------
 // Handlers for typed from ports
@@ -79,7 +81,6 @@ void DpManagerTester::checkTelemetry() {
     TESTER_CHECK_CHANNEL(NumDataProducts);
     TESTER_CHECK_CHANNEL(NumBytes);
 }
-
 
 void DpManagerTester::doDispatch() {
     this->component.doDispatch();

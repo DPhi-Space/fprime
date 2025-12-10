@@ -80,29 +80,50 @@ class FpySequencerTester : public FpySequencerGTestBase, public ::testing::Test 
     void removeFile(const char* name);
     void addDirective(Fpy::DirectiveId id, Fw::StatementArgBuffer& buf);
 
-    void add_WAIT_REL(U32 seconds, U32 uSeconds);
+    void add_WAIT_REL();
     void add_WAIT_REL(FpySequencer_WaitRelDirective dir);
-    void add_WAIT_ABS(Fw::Time wakeupTime);
+    void add_WAIT_ABS();
     void add_WAIT_ABS(FpySequencer_WaitAbsDirective dir);
     void add_GOTO(U32 stmtIdx);
     void add_GOTO(FpySequencer_GotoDirective dir);
-    void add_SET_SER_REG(U8 serRegIdx, Fw::StatementArgBuffer value);
-    void add_SET_SER_REG(FpySequencer_SetSerRegDirective dir);
-    void add_IF(U8 serRegIdx, U32 gotoIfFalse);
+    void add_IF(U32 gotoIfFalse);
     void add_IF(FpySequencer_IfDirective dir);
     void add_NO_OP();
-    void add_GET_TLM(U8 valueDestSerReg, U8 timeDestSerReg, FwChanIdType id);
-    void add_GET_TLM(FpySequencer_GetTlmDirective dir);
-    void add_GET_PRM(U8 serRegIdx, FwPrmIdType id);
-    void add_GET_PRM(FpySequencer_GetPrmDirective dir);
-    void add_CMD(FwOpcodeType opcode);
-    void add_CMD(FpySequencer_CmdDirective dir);
-    void add_DESER_SER_REG(U8 srcSerRegIdx, FwSizeType srcOffset, U8 destReg, U8 deserSize);
-    void add_DESER_SER_REG(FpySequencer_DeserSerRegDirective dir);
-    void add_SET_REG(U8 dest, I64 value);
-    void add_SET_REG(FpySequencer_SetRegDirective dir);
-    void add_BINARY_CMP(U8 lhs, U8 rhs, U8 res, Fpy::DirectiveId op);
-    void add_BINARY_CMP(FpySequencer_BinaryCmpDirective dir);
+    void add_PUSH_TLM_VAL(FwChanIdType id);
+    void add_PUSH_TLM_VAL(FpySequencer_PushTlmValDirective dir);
+    void add_PUSH_TLM_VAL_AND_TIME(FwChanIdType id);
+    void add_PUSH_TLM_VAL_AND_TIME(FpySequencer_PushTlmValAndTimeDirective dir);
+    void add_PUSH_PRM(FwPrmIdType id);
+    void add_PUSH_PRM(FpySequencer_PushPrmDirective dir);
+    void add_CONST_CMD(FwOpcodeType opcode);
+    void add_CONST_CMD(FpySequencer_ConstCmdDirective dir);
+    void add_STACK_OP(Fpy::DirectiveId op);
+    void add_EXIT();
+    void add_ALLOCATE(Fpy::StackSizeType size);
+    void add_ALLOCATE(FpySequencer_AllocateDirective dir);
+    void add_STORE_CONST_OFFSET(Fpy::StackSizeType lvarOffset, Fpy::StackSizeType size);
+    void add_STORE_CONST_OFFSET(FpySequencer_StoreConstOffsetDirective dir);
+    void add_LOAD(Fpy::StackSizeType lvarOffset, Fpy::StackSizeType size);
+    void add_LOAD(FpySequencer_LoadDirective dir);
+    void add_DISCARD(Fpy::StackSizeType size);
+    void add_DISCARD(FpySequencer_DiscardDirective dir);
+    void add_STACK_CMD(Fpy::StackSizeType size);
+    void add_STACK_CMD(FpySequencer_StackCmdDirective dir);
+    void add_MEMCMP(Fpy::StackSizeType size);
+    void add_MEMCMP(FpySequencer_MemCmpDirective dir);
+    void add_SET_FLAG(U8 flagIdx);
+    void add_SET_FLAG(FpySequencer_SetFlagDirective dir);
+    void add_GET_FLAG(U8 flagIdx);
+    void add_GET_FLAG(FpySequencer_GetFlagDirective dir);
+    void add_PUSH_TIME();
+    void add_GET_FIELD(Fpy::StackSizeType parentSize, Fpy::StackSizeType memberSize);
+    void add_GET_FIELD(FpySequencer_GetFieldDirective dir);
+    void add_PEEK();
+    void add_PEEK(FpySequencer_PeekDirective dir);
+    void add_STORE(Fpy::StackSizeType size);
+    void add_STORE(FpySequencer_StoreDirective dir);
+    template <typename T>
+    void add_PUSH_VAL(T val);
     //! Handle a text event
     void textLogIn(FwEventIdType id,                //!< The event ID
                    const Fw::Time& timeTag,         //!< The time
@@ -131,39 +152,163 @@ class FpySequencerTester : public FpySequencerGTestBase, public ::testing::Test 
     Signal tester_noOp_directiveHandler(const FpySequencer_NoOpDirective& directive, DirectiveError& err);
     Signal tester_waitRel_directiveHandler(const FpySequencer_WaitRelDirective& directive, DirectiveError& err);
     Signal tester_waitAbs_directiveHandler(const FpySequencer_WaitAbsDirective& directive, DirectiveError& err);
-    Signal tester_goto_directiveHandler(const Svc::FpySequencer_GotoDirective &directive, DirectiveError& err);
-    Signal tester_setSerReg_directiveHandler(const FpySequencer_SetSerRegDirective& directive, DirectiveError& err);
+    Signal tester_goto_directiveHandler(const Svc::FpySequencer_GotoDirective& directive, DirectiveError& err);
     Signal tester_if_directiveHandler(const FpySequencer_IfDirective& directive, DirectiveError& err);
-    Signal tester_getPrm_directiveHandler(const FpySequencer_GetPrmDirective& directive, DirectiveError& err);
-    Signal tester_getTlm_directiveHandler(const FpySequencer_GetTlmDirective& directive, DirectiveError& err);
-    Signal tester_not_directiveHandler(const FpySequencer_NotDirective& directive, DirectiveError& err);
+    Signal tester_pushPrm_directiveHandler(const FpySequencer_PushPrmDirective& directive, DirectiveError& err);
+    Signal tester_pushTlmVal_directiveHandler(const FpySequencer_PushTlmValDirective& directive, DirectiveError& err);
+    Signal tester_pushTlmValAndTime_directiveHandler(const FpySequencer_PushTlmValAndTimeDirective& directive,
+                                                     DirectiveError& err);
     Signal tester_exit_directiveHandler(const FpySequencer_ExitDirective& directive, DirectiveError& err);
-    Signal tester_cmd_directiveHandler(const FpySequencer_CmdDirective& directive, DirectiveError& err);
-    Signal tester_deserSerReg_directiveHandler(const FpySequencer_DeserSerRegDirective& directive, DirectiveError& err);
-    Signal tester_binaryCmp_directiveHandler(const FpySequencer_BinaryCmpDirective& directive, DirectiveError& err);
-    Signal tester_setReg_directiveHandler(const FpySequencer_SetRegDirective& directive, DirectiveError& err);
+    Signal tester_constCmd_directiveHandler(const FpySequencer_ConstCmdDirective& directive, DirectiveError& err);
+    Signal tester_stackOp_directiveHandler(const FpySequencer_StackOpDirective& directive, DirectiveError& err);
+    Signal tester_discard_directiveHandler(const FpySequencer_DiscardDirective& directive, DirectiveError& err);
+    Signal tester_stackCmd_directiveHandler(const FpySequencer_StackCmdDirective& directive, DirectiveError& err);
+    Signal tester_memCmp_directiveHandler(const FpySequencer_MemCmpDirective& directive, DirectiveError& err);
+    Signal tester_setFlag_directiveHandler(const FpySequencer_SetFlagDirective& directive, DirectiveError& err);
+    Signal tester_getFlag_directiveHandler(const FpySequencer_GetFlagDirective& directive, DirectiveError& err);
+    Signal tester_getField_directiveHandler(const FpySequencer_GetFieldDirective& directive, DirectiveError& err);
+    Signal tester_peek_directiveHandler(const FpySequencer_PeekDirective& directive, DirectiveError& err);
+    Signal tester_store_directiveHandler(const FpySequencer_StoreDirective& directive, DirectiveError& err);
+    Signal tester_pushTime_directiveHandler(const FpySequencer_PushTimeDirective& directive, DirectiveError& err);
+    DirectiveError tester_op_or();
+    DirectiveError tester_op_and();
+    DirectiveError tester_op_ieq();
+    DirectiveError tester_op_ine();
+    DirectiveError tester_op_ult();
+    DirectiveError tester_op_ule();
+    DirectiveError tester_op_ugt();
+    DirectiveError tester_op_uge();
+    DirectiveError tester_op_slt();
+    DirectiveError tester_op_sle();
+    DirectiveError tester_op_sgt();
+    DirectiveError tester_op_sge();
+    DirectiveError tester_op_feq();
+    DirectiveError tester_op_fne();
+    DirectiveError tester_op_flt();
+    DirectiveError tester_op_fle();
+    DirectiveError tester_op_fgt();
+    DirectiveError tester_op_fge();
+    DirectiveError tester_op_not();
+    DirectiveError tester_op_fpext();
+    DirectiveError tester_op_fptrunc();
+    DirectiveError tester_op_fptoui();
+    DirectiveError tester_op_fptosi();
+    DirectiveError tester_op_sitofp();
+    DirectiveError tester_op_uitofp();
+    DirectiveError tester_op_add();
+    DirectiveError tester_op_sub();
+    DirectiveError tester_op_mul();
+    DirectiveError tester_op_udiv();
+    DirectiveError tester_op_sdiv();
+    DirectiveError tester_op_umod();
+    DirectiveError tester_op_smod();
+    DirectiveError tester_op_fadd();
+    DirectiveError tester_op_fsub();
+    DirectiveError tester_op_fmul();
+    DirectiveError tester_op_fdiv();
+    DirectiveError tester_op_fpow();
+    DirectiveError tester_op_flog();
+    DirectiveError tester_op_fmod();
+    DirectiveError tester_op_siext_8_64();
+    DirectiveError tester_op_siext_16_64();
+    DirectiveError tester_op_siext_32_64();
+    DirectiveError tester_op_ziext_8_64();
+    DirectiveError tester_op_ziext_16_64();
+    DirectiveError tester_op_ziext_32_64();
+    DirectiveError tester_op_itrunc_64_8();
+    DirectiveError tester_op_itrunc_64_16();
+    DirectiveError tester_op_itrunc_64_32();
     FpySequencer::Runtime* tester_get_m_runtime_ptr();
     Fw::ExternalSerializeBuffer* tester_get_m_sequenceBuffer_ptr();
     void tester_set_m_sequencesStarted(U64 val);
     void tester_set_m_statementsDispatched(U64 val);
     U64 tester_get_m_sequencesStarted();
     U64 tester_get_m_statementsDispatched();
-    Fw::Success tester_deserializeDirective(const Fpy::Statement& stmt, Svc::FpySequencer::DirectiveUnion& deserializedDirective);
+    Fw::Success tester_deserializeDirective(const Fpy::Statement& stmt,
+                                            Svc::FpySequencer::DirectiveUnion& deserializedDirective);
     Fpy::Sequence* tester_get_m_sequenceObj_ptr();
     Svc::Signal tester_dispatchStatement();
     Fw::Success tester_validate();
     Fw::String tester_get_m_sequenceFilePath();
     void tester_set_m_sequenceFilePath(Fw::String str);
-    Fw::Success tester_readBytes(Os::File& file, FwSizeType readLen, bool updateCrc = true);
+    Fw::Success tester_readBytes(Os::File& file,
+                                 FwSizeType readLen,
+                                 FpySequencer_FileReadStage readStage,
+                                 bool updateCrc = true);
     Fw::Success tester_readFooter();
     Fw::Success tester_readBody();
     Fw::Success tester_readHeader();
     void tester_set_m_computedCRC(U32 crc);
-    Svc::FpySequencer::Debug* tester_get_m_debug_ptr();
+    Svc::FpySequencer::BreakpointInfo* tester_get_m_breakpoint_ptr();
     Svc::Signal tester_checkStatementTimeout();
     Svc::Signal tester_checkShouldWake();
     Svc::FpySequencer::Telemetry* tester_get_m_tlm_ptr();
+    void tester_doDispatch();
+    void tester_setState(Svc::FpySequencer_SequencerStateMachineStateMachineBase::State state);
+    Svc::FpySequencer_SequencerStateMachineStateMachineBase::State tester_getState();
+    void tester_dispatchDirective(const FpySequencer::DirectiveUnion& directive, const Fpy::DirectiveId& id);
+    template <typename T>
+    void tester_push(T val);
+    template <typename T>
+    T tester_pop();
 
+  public:
+    // ----------------------------------------------------------------------
+    // Static methods for accessing protected opcodes
+    // ----------------------------------------------------------------------
+
+    //! Get the OPCODE_RUN value
+    static FwOpcodeType get_OPCODE_RUN() { return FpySequencerComponentBase::OPCODE_RUN; }
+
+    //! Get the OPCODE_VALIDATE value
+    static FwOpcodeType get_OPCODE_VALIDATE() { return FpySequencerComponentBase::OPCODE_VALIDATE; }
+
+    //! Get the OPCODE_RUN_VALIDATED value
+    static FwOpcodeType get_OPCODE_RUN_VALIDATED() { return FpySequencerComponentBase::OPCODE_RUN_VALIDATED; }
+
+    //! Get the OPCODE_CANCEL value
+    static FwOpcodeType get_OPCODE_CANCEL() { return FpySequencerComponentBase::OPCODE_CANCEL; }
+
+    //! Get the OPCODE_CLEAR_BREAKPOINT value
+    static FwOpcodeType get_OPCODE_CLEAR_BREAKPOINT() { return FpySequencerComponentBase::OPCODE_CLEAR_BREAKPOINT; }
+
+    //! Get the OPCODE_SET_BREAKPOINT value
+    static FwOpcodeType get_OPCODE_SET_BREAKPOINT() { return FpySequencerComponentBase::OPCODE_SET_BREAKPOINT; }
+
+    //! Get the OPCODE_BREAK value
+    static FwOpcodeType get_OPCODE_BREAK() { return FpySequencerComponentBase::OPCODE_BREAK; }
+
+    //! Get the OPCODE_SET_FLAG value
+    static FwOpcodeType get_OPCODE_SET_FLAG() { return FpySequencerComponentBase::OPCODE_SET_FLAG; }
+
+    //! Get the OPCODE_CONTINUE value
+    static FwOpcodeType get_OPCODE_CONTINUE() { return FpySequencerComponentBase::OPCODE_CONTINUE; }
+
+    //! Get the OPCODE_STEP value
+    static FwOpcodeType get_OPCODE_STEP() { return FpySequencerComponentBase::OPCODE_STEP; }
+
+    //! Get the OPCODE_DUMP_STACK_TO_FILE value
+    static FwOpcodeType get_OPCODE_DUMP_STACK_TO_FILE() { return FpySequencerComponentBase::OPCODE_DUMP_STACK_TO_FILE; }
+};
+
+class FpySequencer_SequencerStateMachineTester {
+    // ----------------------------------------------------------------------
+    // Construction and destruction
+    // ----------------------------------------------------------------------
+
+  public:
+    //! Construct object FpySequencer_SequencerStateMachineTester
+    //!
+    FpySequencer_SequencerStateMachineTester();
+
+    //! Destroy object FpySequencer_SequencerStateMachineTester
+    //!
+    ~FpySequencer_SequencerStateMachineTester();
+
+    // ----------------------------------------------------------------------
+    // Test access to private and protected methods and members
+    // ----------------------------------------------------------------------
+    static void setState(FpySequencer_SequencerStateMachineStateMachineBase& sm, State s) { sm.m_state = s; }
 };
 
 }  // namespace Svc

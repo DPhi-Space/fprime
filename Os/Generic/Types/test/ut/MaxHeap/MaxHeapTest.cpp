@@ -1,50 +1,44 @@
-#include "Os/Generic/Types/MaxHeap.hpp"
 #include <gtest/gtest.h>
 #include <cstdio>
 #include <cstring>
-
+#include "Os/Generic/Types/MaxHeap.hpp"
 
 #define DEPTH 5
 #define DATA_SIZE 3
+#define BIG 100000
 
 TEST(Nominal, Creation) {
-    bool ret;
+    alignas(Types::MaxHeap::ALIGNMENT) U8 heap_allocation[Types::MaxHeap::ELEMENT_SIZE * BIG];
     {
         Types::MaxHeap heap;
-        ret = heap.create(0);
-        ASSERT_TRUE(ret);
+        heap.create(0, Fw::ByteArray(heap_allocation, sizeof(heap_allocation)));
     }
     {
         Types::MaxHeap heap;
-        ret = heap.create(1000000);
-        ASSERT_TRUE(ret);
+        heap.create(BIG, Fw::ByteArray(heap_allocation, sizeof(heap_allocation)));
     }
     {
         Types::MaxHeap heap;
-        ret = heap.create(1);
-        ASSERT_TRUE(ret);
+        heap.create(1, Fw::ByteArray(heap_allocation, sizeof(heap_allocation)));
     }
     {
         Types::MaxHeap heap;
-        ret = heap.create(DEPTH);
-        ASSERT_TRUE(ret);
+        heap.create(DEPTH, Fw::ByteArray(heap_allocation, sizeof(heap_allocation)));
     }
     {
         Types::MaxHeap heap;
-        ret = heap.create(DEPTH);
-        ASSERT_TRUE(ret);
+        heap.create(DEPTH, Fw::ByteArray(heap_allocation, sizeof(heap_allocation)));
     }
 }
 
 TEST(Nominal, Empty) {
     bool ret;
+    alignas(Types::MaxHeap::ALIGNMENT) U8 heap_allocation[Types::MaxHeap::ELEMENT_SIZE * DEPTH];
     Types::MaxHeap heap;
-    ret = heap.create(DEPTH);
-    ASSERT_TRUE(ret);
-
+    heap.create(DEPTH, Fw::ByteArray(heap_allocation, sizeof(heap_allocation)));
 
     FwQueuePriorityType value;
-    FwSizeType id=0;
+    FwSizeType id = 0;
 
     printf("Testing empty...\n");
     ret = heap.pop(value, id);
@@ -61,22 +55,21 @@ TEST(Nominal, Empty) {
 TEST(Nominal, PushPop) {
     printf("Creating heap.\n");
     bool ret;
+    alignas(Types::MaxHeap::ALIGNMENT) U8 heap_allocation[Types::MaxHeap::ELEMENT_SIZE * DEPTH];
     Types::MaxHeap heap;
-    ret = heap.create(DEPTH);
-    ASSERT_TRUE(ret);
-
+    heap.create(DEPTH, Fw::ByteArray(heap_allocation, sizeof(heap_allocation)));
 
     FwQueuePriorityType value;
     FwSizeType size;
-    FwSizeType id=0;
+    FwSizeType id = 0;
 
     printf("Testing push...\n");
-    for(FwSizeType ii = 0; ii < DEPTH; ++ii) {
-        //printf("Inserting value %d\n", ii);
+    for (FwSizeType ii = 0; ii < DEPTH; ++ii) {
+        // printf("Inserting value %d\n", ii);
         ret = heap.push(ii, ii);
         ASSERT_TRUE(ret);
         size = heap.getSize();
-        ASSERT_EQ(size,ii+1);
+        ASSERT_EQ(size, ii + 1);
     }
     ret = heap.push(50, id);
     ASSERT_FALSE(ret);
@@ -87,8 +80,8 @@ TEST(Nominal, PushPop) {
     printf("Passed.\n");
 
     printf("Testing pop...\n");
-    //heap.print();
-    for(FwSizeType i = 0; i < DEPTH; i++) {
+    // heap.print();
+    for (FwSizeType i = 0; i < DEPTH; i++) {
         ASSERT_TRUE(DEPTH - 1 >= i);
         FwSizeType ii = DEPTH - 1 - i;
         ret = heap.pop(value, id);
@@ -96,9 +89,9 @@ TEST(Nominal, PushPop) {
         ASSERT_EQ(id, static_cast<FwSizeType>(ii));
         size = heap.getSize();
         ASSERT_EQ(size, static_cast<FwSizeType>(ii));
-        //printf("Heap state after pop:\n");
-        //heap.print();
-        //printf("Got value %d\n", value);
+        // printf("Heap state after pop:\n");
+        // heap.print();
+        // printf("Got value %d\n", value);
         ASSERT_EQ(value, ii);
     }
     ret = heap.pop(value, id);
@@ -108,14 +101,14 @@ TEST(Nominal, PushPop) {
     printf("Testing random...\n");
     FwQueuePriorityType values[DEPTH] = {56, 0, 127, 57, 5};
     FwSizeType sorted[DEPTH] = {127, 57, 56, 5, 0};
-    //heap.print();
-    // Push values on in random order:
-    for(FwSizeType ii = 0; ii < DEPTH; ++ii) {
+    // heap.print();
+    //  Push values on in random order:
+    for (FwSizeType ii = 0; ii < DEPTH; ++ii) {
         // Push next value in the list:
         ret = heap.push(values[ii], id);
         ASSERT_TRUE(ret);
         size = heap.getSize();
-        ASSERT_EQ(size, ii+1);
+        ASSERT_EQ(size, ii + 1);
 
         // Pop the top value:
         ret = heap.pop(value, id);
@@ -128,31 +121,31 @@ TEST(Nominal, PushPop) {
         ret = heap.push(value, id);
         ASSERT_TRUE(ret);
         size = heap.getSize();
-        ASSERT_EQ(size, ii+1);
+        ASSERT_EQ(size, ii + 1);
     }
     ret = heap.push(values[0], id);
     ASSERT_FALSE(ret);
 
     // Get values out from largest to smallest:
-    for(FwSizeType ii = 0; ii < DEPTH; ++ii) {
+    for (FwSizeType ii = 0; ii < DEPTH; ++ii) {
         // Pop the top value:
         ret = heap.pop(value, id);
         ASSERT_TRUE(ret);
         size = heap.getSize();
-        ASSERT_EQ(size, (DEPTH-ii-1));
+        ASSERT_EQ(size, (DEPTH - ii - 1));
         ASSERT_EQ(value, sorted[ii]);
 
         // Push the top value:
         ret = heap.push(value, id);
         ASSERT_TRUE(ret);
         size = heap.getSize();
-        ASSERT_EQ(size, (DEPTH-ii));
+        ASSERT_EQ(size, (DEPTH - ii));
 
         // Pop again:
         ret = heap.pop(value, id);
         ASSERT_TRUE(ret);
         size = heap.getSize();
-        ASSERT_EQ(size, (DEPTH-ii-1));
+        ASSERT_EQ(size, (DEPTH - ii - 1));
         ASSERT_EQ(value, sorted[ii]);
     }
     ret = heap.pop(value, id);
@@ -165,21 +158,21 @@ TEST(Nominal, PushPop) {
     FwQueuePriorityType priorities[DEPTH] = {7, 7, 7, 7, 7};
     FwSizeType data[DEPTH] = {43, 56, 47, 33, 11};
     // Push values on in random order:
-    for(FwSizeType ii = 0; ii < DEPTH; ++ii) {
+    for (FwSizeType ii = 0; ii < DEPTH; ++ii) {
         // Push next value in the list:
         ret = heap.push(priorities[ii], data[ii]);
         ASSERT_TRUE(ret);
         size = heap.getSize();
-        ASSERT_EQ(size, ii+1);
+        ASSERT_EQ(size, ii + 1);
     }
 
     // Get values out in FIFO order:
-    for(FwSizeType ii = 0; ii < DEPTH; ++ii) {
+    for (FwSizeType ii = 0; ii < DEPTH; ++ii) {
         // Pop the top value:
         ret = heap.pop(value, id);
         ASSERT_TRUE(ret);
         size = heap.getSize();
-        ASSERT_EQ(size, (DEPTH-ii-1));
+        ASSERT_EQ(size, (DEPTH - ii - 1));
         ASSERT_EQ(value, priorities[ii]);
         ASSERT_EQ(id, data[ii]);
     }
@@ -194,21 +187,21 @@ TEST(Nominal, PushPop) {
     FwQueuePriorityType orderedPries[DEPTH] = {100, 7, 7, 1, 1};
     FwSizeType ordered[DEPTH] = {99, 22, 33, 4, 127};
     // Push values on in random order:
-    for(FwSizeType ii = 0; ii < DEPTH; ++ii) {
+    for (FwSizeType ii = 0; ii < DEPTH; ++ii) {
         // Push next value in the list:
         ret = heap.push(pries[ii], data2[ii]);
         ASSERT_TRUE(ret);
         size = heap.getSize();
-        ASSERT_EQ(size, ii+1);
+        ASSERT_EQ(size, ii + 1);
     }
 
     // Get values out in FIFO order:
-    for(FwSizeType ii = 0; ii < DEPTH; ++ii) {
+    for (FwSizeType ii = 0; ii < DEPTH; ++ii) {
         // Pop the top value:
         ret = heap.pop(value, id);
         ASSERT_TRUE(ret);
         size = heap.getSize();
-        ASSERT_EQ(size, (DEPTH-ii-1));
+        ASSERT_EQ(size, (DEPTH - ii - 1));
         ASSERT_EQ(value, orderedPries[ii]);
         ASSERT_EQ(id, ordered[ii]);
     }

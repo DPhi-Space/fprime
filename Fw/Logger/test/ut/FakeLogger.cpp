@@ -12,9 +12,9 @@
 namespace MockLogging {
 Fw::Logger* FakeLogger::s_current = nullptr;
 
-FakeLogger::FakeLogger(): m_last("") {}
+FakeLogger::FakeLogger() : m_last("") {}
 
-void FakeLogger::writeMessage(const Fw::StringBase& message) {
+void FakeLogger::writeMessage(const Fw::ConstStringBase& message) {
     m_last = message.toChar();
 }
 

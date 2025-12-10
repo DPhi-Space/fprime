@@ -18,8 +18,7 @@
 namespace Svc {
 
 class DpWriter final : public DpWriterComponentBase {
-
-  friend class DpWriterTester;
+    friend class DpWriterTester;
 
   public:
     // ----------------------------------------------------------------------
@@ -36,7 +35,7 @@ class DpWriter final : public DpWriterComponentBase {
     ~DpWriter();
 
     //! Configure writer
-    void configure(const Fw::StringBase& dpFileNamePrefix  //!< The file name prefix for writing DP files
+    void configure(const Fw::ConstStringBase& dpFileNamePrefix  //!< The file name prefix for writing DP files
     );
 
   private:
@@ -47,13 +46,13 @@ class DpWriter final : public DpWriterComponentBase {
     //! Handler implementation for bufferSendIn
     //!
     void bufferSendIn_handler(const FwIndexType portNum,  //!< The port number
-                              Fw::Buffer& fwBuffer            //!< The buffer
+                              Fw::Buffer& fwBuffer        //!< The buffer
                               ) final;
 
     //! Handler implementation for schedIn
     //!
     void schedIn_handler(const FwIndexType portNum,  //!< The port number
-                         U32 context                     //!< The call order
+                         U32 context                 //!< The call order
                          ) final;
 
   private:

@@ -21,13 +21,14 @@ StubRawTime::Status StubRawTime::getTimeInterval(const Os::RawTime& other, Fw::T
     return Status::OP_OK;
 }
 
-Fw::SerializeStatus StubRawTime::serialize(Fw::SerializeBufferBase& buffer) const {
+Fw::SerializeStatus StubRawTime::serializeTo(Fw::SerialBufferBase& buffer, Fw::Endianness mode) const {
     return Fw::FW_SERIALIZE_OK;
 }
 
-Fw::SerializeStatus StubRawTime::deserialize(Fw::SerializeBufferBase& buffer) {
+Fw::SerializeStatus StubRawTime::deserializeFrom(Fw::SerialBufferBase& buffer, Fw::Endianness mode) {
     return Fw::FW_SERIALIZE_OK;
 }
+
 }  // namespace RawTime
 }  // namespace Stub
 }  // namespace Os

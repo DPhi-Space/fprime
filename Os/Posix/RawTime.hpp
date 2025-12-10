@@ -5,9 +5,8 @@
 #ifndef OS_POSIX_RAWTIME_HPP
 #define OS_POSIX_RAWTIME_HPP
 
-#include <ctime>
 #include <Os/RawTime.hpp>
-
+#include <ctime>
 
 namespace Os {
 namespace Posix {
@@ -23,7 +22,6 @@ struct PosixRawTimeHandle : public RawTimeHandle {
 //!
 class PosixRawTime : public RawTimeInterface {
   public:
-
     //! \brief constructor
     PosixRawTime() = default;
 
@@ -58,16 +56,18 @@ class PosixRawTime : public RawTimeInterface {
     //! \brief Serialize the contents of the RawTimeInterface object into a buffer.
     //!
     //! This function serializes the contents of the RawTimeInterface object into the provided
-    //! buffer. 
+    //! buffer.
     //!
     //! \note The serialization must fit within `FW_RAW_TIME_SERIALIZATION_MAX_SIZE` bytes. This value is
     //! defined in FpConfig.h. For example, Posix systems use a pair of U32 (sec, nanosec) and can therefore
-    //! serialize in 8 bytes. Should an OSAL implementation require more than this, the project must increase 
+    //! serialize in 8 bytes. Should an OSAL implementation require more than this, the project must increase
     //! that value in its config/ folder.
     //!
     //! \param buffer The buffer to serialize the contents into.
+    //! \param mode Endianness to use when serializing to buffer.
     //! \return Fw::SerializeStatus indicating the result of the serialization.
-    Fw::SerializeStatus serialize(Fw::SerializeBufferBase& buffer) const override;
+    Fw::SerializeStatus serializeTo(Fw::SerialBufferBase& buffer,
+                                    Fw::Endianness mode = Fw::Endianness::BIG) const override;
 
     //! \brief Deserialize the contents of the RawTimeInterface object from a buffer.
     //!
@@ -76,13 +76,14 @@ class PosixRawTime : public RawTimeInterface {
     //!
     //! \note The serialization must fit within `FW_RAW_TIME_SERIALIZATION_MAX_SIZE` bytes. This value is
     //! defined in FpConfig.h. For example, Posix systems use a pair of U32 (sec, nanosec) and can therefore
-    //! serialize in 8 bytes. Should an OSAL implementation require more than this, the project must increase 
+    //! serialize in 8 bytes. Should an OSAL implementation require more than this, the project must increase
     //! that value in its config/ folder.
     //!
     //! \param buffer The buffer to deserialize the contents from.
+    //! \param mode Endianness to use when deserializing from the buffer.
     //! \return Fw::SerializeStatus indicating the result of the deserialization.
-    Fw::SerializeStatus deserialize(Fw::SerializeBufferBase& buffer) override;
-
+    Fw::SerializeStatus deserializeFrom(Fw::SerialBufferBase& buffer,
+                                        Fw::Endianness mode = Fw::Endianness::BIG) override;
 
   private:
     //! Handle for PosixRawTime

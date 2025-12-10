@@ -37,6 +37,29 @@ available on all processor architectures. The types that are available
 is a configurable feature of the architecture and is typically set by
 compiler arguments.
 
+## C Assertion Macros
+
+For C code, the framework provides `FW_CASSERT` macros in Fw/Types/CAssert.h:
+
+- `FW_CASSERT(cond)` - Basic assertion with condition only
+- `FW_CASSERT_1(cond, arg1)` - Assertion with condition and one argument for reporting
+
+The C assertion macros support the same argument types as the C++ version and integrate with the same assertion hook system.
+
+### Example C Assertion Usage
+
+```c
+#include <Fw/Types/CAssert.h>
+
+void example_function(int value) {
+    // Basic assertion
+    FW_CASSERT(value > 0);
+
+    // Assertion with argument reporting
+    FW_CASSERT_1(value <= 1000, value);
+}
+```
+
 The assert can be configured in the following ways:
 
   - FW\_ASSERT\_LEVEL Sets the level or reporting for the asserts.
@@ -61,7 +84,7 @@ By default, when FW\_ASSERT is called the framework prints a message
 (location of and arguments to the macro), and then calls the C assert()
 function. The framework also provides a function that allows the
 registration of a user-defined handler. The handler is
-registerAssertHook and can be found in FwAssert.hpp. The assert hook is
+registerHook and can be found in Fw/Types/Assert.hpp. The assert hook is
 called with a string representing the text of the assert. The user
 implements a derived class that implements the reportAssert() pure
 virtual method, and does whatever project-specific logic is required.

@@ -5,6 +5,7 @@ register_fprime_module(
     Fw_Types
   SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/Assert.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/ConstStringBase.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/MallocAllocator.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/MemAllocator.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/PolyType.cpp"
@@ -38,6 +39,7 @@ register_fprime_ut(
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/ExternalSerializeBufferTest.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/AssertTypesTest.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/TypesTest.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/test/ut/CAssertTest.cpp"
   DEPENDS
     Os
 )

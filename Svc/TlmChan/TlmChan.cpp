@@ -202,29 +202,18 @@ void TlmChan::Run_handler(FwIndexType portNum, U32 context) {
     }
     this->unLock();
 
-    // go through each entry and send a packet if it has been updated
-    Fw::TlmPacket pkt;
-    pkt.resetPktSer();
-
     for (U32 entry = 0; entry < TLMCHAN_HASH_BUCKETS; entry++) {
         TlmEntry* p_entry = &this->m_tlmEntries[1 - this->m_activeBuffer].buckets[entry];
         if ((p_entry->updated) && (p_entry->used)) {
+            Fw::TlmPacket pkt;
+            pkt.resetPktSer();
             Fw::SerializeStatus stat = pkt.addValue(p_entry->id, p_entry->lastUpdate, p_entry->buffer);
 
-            // check to see if this packet is full, if so, send it
-            if (Fw::FW_SERIALIZE_NO_ROOM_LEFT == stat) {
+            if (Fw::FW_SERIALIZE_OK == stat) {
                 this->PktSend_out(0, pkt.getBuffer(), 0);
                 // reset packet for more entries
                 pkt.resetPktSer();
-                // add entry to new packet
-                stat = pkt.addValue(p_entry->id, p_entry->lastUpdate, p_entry->buffer);
-                // if this doesn't work, that means packet isn't big enough for
-                // even one channel, so assert
-                FW_ASSERT(Fw::FW_SERIALIZE_OK == stat, static_cast<FwAssertArgType>(stat));
-            } else if (Fw::FW_SERIALIZE_OK == stat) {
-                // if there was still room, do nothing move on to the next channel in the packet
-            } else  // any other status is an assert, since it shouldn't happen
-            {
+            } else {
                 FW_ASSERT(0, static_cast<FwAssertArgType>(stat));
             }
             // flag as updated
@@ -232,10 +221,6 @@ void TlmChan::Run_handler(FwIndexType portNum, U32 context) {
         }  // end if entry was updated
     }  // end for each entry
 
-    // send remnant entries
-    if (pkt.getNumEntries() > 0) {
-        this->PktSend_out(0, pkt.getBuffer(), 0);
-    }
 }  // end run handler
 
 }  // namespace Svc
